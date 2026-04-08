@@ -1,0 +1,577 @@
+// The Fighter's Insight — database schema
+// Production target: PostgreSQL (Supabase or Neon)
+// Run: npx prisma generate && npx prisma db push
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// =====================================================
+// USERS & AUTH
+// =====================================================
+
+enum UserRole {
+  GUEST
+  FAN
+  PARTNER
+  MODERATOR
+  ADMIN
+}
+
+enum ExperienceLevel {
+  FAN_ONLY
+  BEGINNER
+  ACTIVE_TRAINEE
+  AMATEUR
+  COACH
+}
+
+enum CombatStyle {
+  BOXING
+  MMA
+  MUAY_THAI
+  BJJ
+  WRESTLING
+  KICKBOXING
+  KARATE
+  JUDO
+  TAEKWONDO
+  GRAPPLING
+}
+
+model User {
+  id               String          @id @default(cuid())
+  username         String          @unique
+  email            String          @unique
+  hashedPassword   String?
+  avatar           String?
+  bio              String?
+  role             UserRole        @default(FAN)
+  experienceLevel  ExperienceLevel @default(FAN_ONLY)
+  location         String?
+  lat              Float?
+  lng              Float?
+  favoriteSports   CombatStyle[]
+  favoriteFighters String[]
+  flair            String?
+  reputation       Int             @default(0)
+  isSuspended      Boolean         @default(false)
+  suspendedUntil   DateTime?
+  createdAt        DateTime        @default(now())
+  updatedAt        DateTime        @updatedAt
+
+  blogPosts     BlogPost[]
+  blogComments  BlogComment[]
+  liveUpdates   LiveUpdate[]
+  liveComments  LiveComment[]
+  forumThreads  ForumThread[]
+  forumReplies  ForumReply[]
+  votes         Vote[]
+  bookmarks     Bookmark[]
+  reportsFiled  Report[]        @relation("ReportedBy")
+  badges        UserBadge[]
+  trainerProfile TrainerProfile?
+  ownedGyms     GymListing[]    @relation("GymOwner")
+
+  @@index([role])
+  @@index([location])
+}
+
+model UserBadge {
+  id       String   @id @default(cuid())
+  userId   String
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  slug     String
+  name     String
+  earnedAt DateTime @default(now())
+
+  @@unique([userId, slug])
+}
+
+// =====================================================
+// BLOG
+// =====================================================
+
+enum BlogStatus {
+  DRAFT
+  SCHEDULED
+  PUBLISHED
+  ARCHIVED
+}
+
+enum BlogCategory {
+  FIGHT_ANALYSIS
+  PREDICTIONS
+  EVENT_RECAPS
+  FIGHTER_SPOTLIGHTS
+  TRAINING_ADVICE
+  BEGINNER_GUIDES
+  GYM_REVIEWS
+  GEAR_REVIEWS
+  OPINION
+}
+
+model BlogPost {
+  id              String       @id @default(cuid())
+  title           String
+  slug            String       @unique
+  excerpt         String
+  content         String       // markdown / portable rich text
+  coverImage      String?
+  category        BlogCategory
+  tags            String[]
+  status          BlogStatus   @default(DRAFT)
+  featured        Boolean      @default(false)
+  readingMinutes  Int          @default(5)
+  seoTitle        String?
+  seoDescription  String?
+  publishedAt     DateTime?
+  scheduledFor    DateTime?
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+
+  authorId String
+  author   User   @relation(fields: [authorId], references: [id])
+
+  comments BlogComment[]
+
+  @@index([status, publishedAt])
+  @@index([category])
+  @@index([featured])
+}
+
+model BlogComment {
+  id        String   @id @default(cuid())
+  body      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  postId String
+  post   BlogPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  parentId String?
+  parent   BlogComment?  @relation("BlogCommentReplies", fields: [parentId], references: [id])
+  replies  BlogComment[] @relation("BlogCommentReplies")
+
+  @@index([postId])
+}
+
+// =====================================================
+// LIVE FIGHT CENTER
+// =====================================================
+
+enum LiveEventStatus {
+  UPCOMING
+  LIVE
+  ENDED
+  CANCELED
+}
+
+enum Promotion {
+  UFC
+  BELLATOR
+  PFL
+  ONE
+  BOXING
+  GLORY
+  RIZIN
+  CAGE_WARRIORS
+  OTHER
+}
+
+model LiveEvent {
+  id          String          @id @default(cuid())
+  title       String
+  slug        String          @unique
+  promotion   Promotion
+  venue       String?
+  city        String?
+  country     String?
+  startTime   DateTime
+  endedAt     DateTime?
+  status      LiveEventStatus @default(UPCOMING)
+  description String?
+  coverImage  String?
+  recapPostId String?
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+
+  bouts        FightCardBout[]
+  updates      LiveUpdate[]
+  comments     LiveComment[]
+  polls        LivePoll[]
+
+  @@index([status, startTime])
+}
+
+model FightCardBout {
+  id          String  @id @default(cuid())
+  eventId     String
+  event       LiveEvent @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  fighterA    String
+  fighterARecord String?
+  fighterB    String
+  fighterBRecord String?
+  weightClass String
+  order       Int
+  isMainEvent Boolean @default(false)
+  isCoMain    Boolean @default(false)
+  result      String?
+  method      String?
+  round       Int?
+  time        String?
+
+  @@index([eventId, order])
+}
+
+model LiveUpdate {
+  id        String   @id @default(cuid())
+  body      String
+  type      String   @default("update") // update | knockdown | result | scorecard | bonus
+  timestamp DateTime @default(now())
+
+  eventId String
+  event   LiveEvent @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  createdById String
+  createdBy   User   @relation(fields: [createdById], references: [id])
+
+  @@index([eventId, timestamp])
+}
+
+model LiveComment {
+  id        String   @id @default(cuid())
+  body      String
+  createdAt DateTime @default(now())
+  isHidden  Boolean  @default(false)
+
+  eventId String
+  event   LiveEvent @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  parentId String?
+  parent   LiveComment?  @relation("LiveCommentReplies", fields: [parentId], references: [id])
+  replies  LiveComment[] @relation("LiveCommentReplies")
+
+  @@index([eventId, createdAt])
+}
+
+model LivePoll {
+  id        String   @id @default(cuid())
+  eventId   String
+  event     LiveEvent @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  question  String
+  options   String[] // JSON-ish; results stored separately
+  closesAt  DateTime?
+  createdAt DateTime @default(now())
+
+  votes LivePollVote[]
+}
+
+model LivePollVote {
+  id        String   @id @default(cuid())
+  pollId    String
+  poll      LivePoll @relation(fields: [pollId], references: [id], onDelete: Cascade)
+  userId    String
+  optionIdx Int
+  createdAt DateTime @default(now())
+
+  @@unique([pollId, userId])
+}
+
+// =====================================================
+// FORUM
+// =====================================================
+
+enum ThreadType {
+  STANDARD
+  POLL
+  ADVICE
+  QA
+  BREAKDOWN
+}
+
+model ForumCategory {
+  id          String  @id @default(cuid())
+  name        String  @unique
+  slug        String  @unique
+  description String
+  icon        String?
+  order       Int     @default(0)
+
+  threads ForumThread[]
+}
+
+model ForumThread {
+  id        String     @id @default(cuid())
+  title     String
+  slug      String     @unique
+  body      String
+  type      ThreadType @default(STANDARD)
+  tags      String[]
+  upvotes   Int        @default(0)
+  downvotes Int        @default(0)
+  views     Int        @default(0)
+  pinned    Boolean    @default(false)
+  locked    Boolean    @default(false)
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
+
+  categoryId String
+  category   ForumCategory @relation(fields: [categoryId], references: [id])
+
+  replies ForumReply[]
+  votes   Vote[]
+
+  @@index([categoryId, createdAt])
+  @@index([pinned, upvotes])
+}
+
+model ForumReply {
+  id        String   @id @default(cuid())
+  body      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  threadId String
+  thread   ForumThread @relation(fields: [threadId], references: [id], onDelete: Cascade)
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  parentId String?
+  parent   ForumReply?  @relation("ForumReplyChildren", fields: [parentId], references: [id])
+  children ForumReply[] @relation("ForumReplyChildren")
+
+  @@index([threadId, createdAt])
+}
+
+model Vote {
+  id     String @id @default(cuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  threadId String?
+  thread   ForumThread? @relation(fields: [threadId], references: [id], onDelete: Cascade)
+
+  value Int // -1 or 1
+
+  createdAt DateTime @default(now())
+
+  @@unique([userId, threadId])
+}
+
+// =====================================================
+// START TRAINING — Gyms & Trainers
+// =====================================================
+
+enum PriceRange {
+  FREE
+  BUDGET     // $
+  STANDARD   // $$
+  PREMIUM    // $$$
+  ELITE      // $$$$
+}
+
+enum PartnerStatus {
+  NONE
+  CLAIMED
+  VERIFIED
+  FEATURED
+  SPONSORED
+}
+
+model GymListing {
+  id               String        @id @default(cuid())
+  name             String
+  slug             String        @unique
+  description      String
+  address          String
+  city             String
+  state            String?
+  country          String
+  zip              String?
+  lat              Float
+  lng              Float
+  disciplines      CombatStyle[]
+  priceRange       PriceRange    @default(STANDARD)
+  beginnerFriendly Boolean       @default(false)
+  kidsClasses      Boolean       @default(false)
+  womensClasses    Boolean       @default(false)
+  privateLessons   Boolean       @default(false)
+  groupClasses     Boolean       @default(true)
+  partnerStatus    PartnerStatus @default(NONE)
+  featured         Boolean       @default(false)
+  rating           Float         @default(0)
+  ratingCount      Int           @default(0)
+  website          String?
+  phone            String?
+  email            String?
+  instagram        String?
+  schedulePreview  String?
+  images           String[]
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+
+  ownerId String?
+  owner   User?   @relation("GymOwner", fields: [ownerId], references: [id])
+
+  @@index([city, state])
+  @@index([featured, partnerStatus])
+}
+
+model TrainerProfile {
+  id            String        @id @default(cuid())
+  userId        String        @unique
+  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  displayName   String
+  slug          String        @unique
+  headshot      String?
+  bio           String
+  specialties   String[]
+  disciplines   CombatStyle[]
+  pricing       String?
+  inPerson      Boolean       @default(true)
+  online        Boolean       @default(false)
+  city          String?
+  state         String?
+  country       String?
+  lat           Float?
+  lng           Float?
+  contactEmail  String?
+  phone         String?
+  website       String?
+  images        String[]
+  partnerStatus PartnerStatus @default(NONE)
+  featured      Boolean       @default(false)
+  rating        Float         @default(0)
+  ratingCount   Int           @default(0)
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  @@index([city, state])
+}
+
+// =====================================================
+// GEAR REVIEWS
+// =====================================================
+
+enum GearCategory {
+  BOXING_GLOVES
+  HAND_WRAPS
+  SHIN_GUARDS
+  MOUTHGUARDS
+  HEADGEAR
+  BOXING_SHOES
+  MMA_GLOVES
+  GROIN_PROTECTION
+  RASH_GUARDS
+  BJJ_GIS
+  HEAVY_BAGS
+  JUMP_ROPES
+  RECOVERY
+}
+
+model GearReview {
+  id            String       @id @default(cuid())
+  title         String
+  slug          String       @unique
+  productName   String
+  brand         String
+  category      GearCategory
+  description   String
+  pros          String[]
+  cons          String[]
+  bestFor       String?
+  comfort       Int          @default(0) // 0-10
+  durability    Int          @default(0)
+  value         Int          @default(0)
+  overallRating Float        @default(0)
+  priceMin      Int?
+  priceMax      Int?
+  recommendedLevel ExperienceLevel @default(BEGINNER)
+  affiliateLink String?
+  images        String[]
+  featured      Boolean      @default(false)
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+
+  @@index([category, featured])
+}
+
+// =====================================================
+// SHARED — Bookmarks, Reports, Notifications
+// =====================================================
+
+enum BookmarkType {
+  BLOG
+  THREAD
+  EVENT
+  GYM
+  TRAINER
+  GEAR
+}
+
+model Bookmark {
+  id        String       @id @default(cuid())
+  userId    String
+  user      User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  itemType  BookmarkType
+  itemId    String
+  createdAt DateTime     @default(now())
+
+  @@unique([userId, itemType, itemId])
+  @@index([userId])
+}
+
+enum ReportTargetType {
+  BLOG_COMMENT
+  FORUM_THREAD
+  FORUM_REPLY
+  LIVE_COMMENT
+  GYM_LISTING
+  USER
+}
+
+enum ReportStatus {
+  OPEN
+  REVIEWING
+  ACTIONED
+  DISMISSED
+}
+
+model Report {
+  id         String           @id @default(cuid())
+  reporterId String
+  reporter   User             @relation("ReportedBy", fields: [reporterId], references: [id])
+  targetType ReportTargetType
+  targetId   String
+  reason     String
+  status     ReportStatus     @default(OPEN)
+  notes      String?
+  createdAt  DateTime         @default(now())
+  resolvedAt DateTime?
+
+  @@index([status, createdAt])
+}
+
+model NewsletterSubscriber {
+  id         String   @id @default(cuid())
+  email      String   @unique
+  createdAt  DateTime @default(now())
+  unsubscribed Boolean @default(false)
+  source     String?
+}
