@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Logo } from "@/components/brand/logo";
+import { NewsletterForm } from "@/components/forms/newsletter-form";
 
 const COLS: { title: string; links: { label: string; href: string }[] }[] = [
   {
@@ -52,17 +53,9 @@ export function SiteFooter() {
               Where fight fans think deeper. Independent fight media, live event reactions,
               community, training discovery, and gear reviews — all in one place.
             </p>
-            <form className="mt-6 flex max-w-sm gap-2">
-              <input
-                type="email"
-                placeholder="your@email.com"
-                aria-label="Email address"
-                className="input"
-              />
-              <button type="submit" className="btn-primary shrink-0">
-                Subscribe
-              </button>
-            </form>
+            <div className="mt-6">
+              <NewsletterForm source="footer" />
+            </div>
             <p className="mt-2 text-[11px] text-ink-400">
               Get fight previews, live event alerts, and beginner tips. No spam.
             </p>

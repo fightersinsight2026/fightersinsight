@@ -5,6 +5,7 @@ import { ThreadRow } from "@/components/cards/thread-row";
 import { GymCard } from "@/components/cards/gym-card";
 import { GearCard } from "@/components/cards/gear-card";
 import { SectionHeader } from "@/components/sections/section-header";
+import { NewsletterForm } from "@/components/forms/newsletter-form";
 import {
   MOCK_BLOGS,
   MOCK_EVENTS,
@@ -200,17 +201,9 @@ export default function HomePage() {
             <p className="mt-3 text-ink-300">
               One email a week. Built by fight fans, for fight fans. Unsubscribe anytime.
             </p>
-            <form className="mt-6 flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
-              <input
-                type="email"
-                placeholder="your@email.com"
-                aria-label="Email address"
-                className="input max-w-sm"
-              />
-              <button type="submit" className="btn-primary w-full sm:w-auto">
-                Subscribe
-              </button>
-            </form>
+            <div className="mt-6">
+              <NewsletterForm variant="inline" source="home" />
+            </div>
           </div>
         </div>
       </section>
