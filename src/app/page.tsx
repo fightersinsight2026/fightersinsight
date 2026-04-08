@@ -4,6 +4,7 @@ import { EventCard } from "@/components/cards/event-card";
 import { ThreadRow } from "@/components/cards/thread-row";
 import { GymCard } from "@/components/cards/gym-card";
 import { GearCard } from "@/components/cards/gear-card";
+import { FighterCard } from "@/components/cards/fighter-card";
 import { SectionHeader } from "@/components/sections/section-header";
 import { NewsletterForm } from "@/components/forms/newsletter-form";
 import {
@@ -12,6 +13,7 @@ import {
   MOCK_THREADS,
   MOCK_GYMS,
   MOCK_GEAR,
+  MOCK_FIGHTERS,
 } from "@/lib/mock-data";
 import { ArrowRight, Flame, Newspaper, Radio, Users, Dumbbell } from "lucide-react";
 
@@ -175,6 +177,23 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* FEATURED FIGHTERS */}
+      <section className="border-t border-ink-800/80 bg-ink-900/40">
+        <div className="container-fi py-16">
+          <SectionHeader
+            eyebrow="Fighter database"
+            title="Featured fighters"
+            link="/fighters"
+            linkLabel="Browse all fighters"
+          />
+          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+            {MOCK_FIGHTERS.slice(0, 4).map((f) => (
+              <FighterCard key={f.id} fighter={f} />
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* GEAR SPOTLIGHT */}
       <section className="container-fi py-16">
         <SectionHeader
@@ -184,7 +203,7 @@ export default function HomePage() {
           linkLabel="All reviews"
         />
         <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-          {MOCK_GEAR.map((g) => (
+          {MOCK_GEAR.slice(0, 4).map((g) => (
             <GearCard key={g.id} gear={g} />
           ))}
         </div>
