@@ -46,7 +46,7 @@ export default function HomePage() {
             </h1>
             <p className="mt-6 max-w-2xl text-lg text-ink-200">
               Independent fight blogs, live event reactions, real community discussion, gym & trainer
-              discovery, and gear reviews — all in one place. For hardcore fans and total beginners.
+              discovery, and gear reviews — all in one place. Built for the fight community.
             </p>
 
             <div className="mt-8 flex flex-wrap gap-3">
