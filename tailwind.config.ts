@@ -36,9 +36,9 @@ const config: Config = {
           100: "#e6e8ee",
         },
         blood: {
-          500: "#e11d2a",
-          600: "#c11622",
-          700: "#9c0e19",
+          500: "#1d4ed8",
+          600: "#1e40af",
+          700: "#1e3a8a",
         },
         gold: {
           400: "#f5c451",
@@ -52,19 +52,19 @@ const config: Config = {
       },
       boxShadow: {
         cardglow: "0 0 0 1px rgba(255,255,255,0.04), 0 8px 30px rgba(0,0,0,0.4)",
-        bloodglow: "0 0 0 1px rgba(225,29,42,0.5), 0 0 30px rgba(225,29,42,0.25)",
+        bloodglow: "0 0 0 1px rgba(29,78,216,0.5), 0 0 30px rgba(29,78,216,0.25)",
       },
       backgroundImage: {
         "grid-fade":
           "linear-gradient(180deg, rgba(7,7,8,0) 0%, rgba(7,7,8,0.6) 60%, rgba(7,7,8,1) 100%)",
         "hero-radial":
-          "radial-gradient(ellipse at top, rgba(225,29,42,0.18) 0%, rgba(7,7,8,0) 60%)",
+          "radial-gradient(ellipse at top, rgba(29,78,216,0.18) 0%, rgba(7,7,8,0) 60%)",
       },
       keyframes: {
         pulseRing: {
-          "0%": { boxShadow: "0 0 0 0 rgba(225,29,42,0.6)" },
-          "70%": { boxShadow: "0 0 0 12px rgba(225,29,42,0)" },
-          "100%": { boxShadow: "0 0 0 0 rgba(225,29,42,0)" },
+          "0%": { boxShadow: "0 0 0 0 rgba(29,78,216,0.6)" },
+          "70%": { boxShadow: "0 0 0 12px rgba(29,78,216,0)" },
+          "100%": { boxShadow: "0 0 0 0 rgba(29,78,216,0)" },
         },
       },
       animation: {
