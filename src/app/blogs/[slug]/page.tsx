@@ -1,31 +1,110 @@
+"use client";
+
+import { useState, useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { useParams } from "next/navigation";
 import { MOCK_BLOGS } from "@/lib/mock-data";
 import { formatDate } from "@/lib/format";
 import { BlogCard } from "@/components/cards/blog-card";
-import { Bookmark, Share2, MessageSquare, Clock, ArrowLeft } from "lucide-react";
-import type { Metadata } from "next";
+import { Bookmark, BookmarkCheck, Share2, MessageSquare, Clock, ArrowLeft, Reply, Check } from "lucide-react";
 
-export function generateStaticParams() {
-  return MOCK_BLOGS.map((b) => ({ slug: b.slug }));
-}
-
-export function generateMetadata({ params }: { params: { slug: string } }): Metadata {
+export default function BlogPostPage() {
+  const params = useParams<{ slug: string }>();
   const post = MOCK_BLOGS.find((b) => b.slug === params.slug);
-  if (!post) return { title: "Post not found" };
-  return {
-    title: post.title,
-    description: post.excerpt,
-    openGraph: { title: post.title, description: post.excerpt, images: [post.cover] },
-  };
-}
 
-export default function BlogPostPage({ params }: { params: { slug: string } }) {
-  const post = MOCK_BLOGS.find((b) => b.slug === params.slug);
-  if (!post) notFound();
+  const commentsRef = useRef<HTMLElement>(null);
+  const commentInputRef = useRef<HTMLTextAreaElement>(null);
+
+  const [saved, setSaved] = useState(false);
+  const [shareLabel, setShareLabel] = useState("Share");
+  const [commentText, setCommentText] = useState("");
+  const [comments, setComments] = useState([
+    {
+      id: "c1",
+      user: "fightnerd99",
+      flair: "MMA Fan",
+      body: "Footwork take is spot on. People keep talking about power, but the angles are everything in this matchup.",
+      replyTo: null as string | null,
+    },
+    {
+      id: "c2",
+      user: "coachJay",
+      flair: "Coach",
+      body: "Agree on key #2. The minute he starts retreating in straight lines, this becomes a problem.",
+      replyTo: null as string | null,
+    },
+  ]);
+  const [replyingTo, setReplyingTo] = useState<string | null>(null);
+  const [replyText, setReplyText] = useState("");
+
+  if (!post) {
+    return (
+      <div className="container-fi py-20 text-center">
+        <h1 className="heading-display text-3xl text-white">Post not found</h1>
+        <Link href="/blogs" className="btn-primary mt-6 inline-flex">
+          Back to blogs
+        </Link>
+      </div>
+    );
+  }
 
   const related = MOCK_BLOGS.filter((b) => b.id !== post.id).slice(0, 3);
+
+  function handleSave() {
+    setSaved((s) => !s);
+  }
+
+  async function handleShare() {
+    const url = window.location.href;
+    if (navigator.share) {
+      try {
+        await navigator.share({ title: post!.title, url });
+      } catch {
+        /* user cancelled */
+      }
+    } else {
+      await navigator.clipboard.writeText(url);
+      setShareLabel("Link copied!");
+      setTimeout(() => setShareLabel("Share"), 2000);
+    }
+  }
+
+  function handleJumpToComments() {
+    commentsRef.current?.scrollIntoView({ behavior: "smooth" });
+    setTimeout(() => commentInputRef.current?.focus(), 400);
+  }
+
+  function handlePostComment() {
+    if (!commentText.trim()) return;
+    setComments((prev) => [
+      ...prev,
+      {
+        id: `c${Date.now()}`,
+        user: "you",
+        flair: "Member",
+        body: commentText.trim(),
+        replyTo: null,
+      },
+    ]);
+    setCommentText("");
+  }
+
+  function handlePostReply(parentId: string) {
+    if (!replyText.trim()) return;
+    setComments((prev) => [
+      ...prev,
+      {
+        id: `c${Date.now()}`,
+        user: "you",
+        flair: "Member",
+        body: replyText.trim(),
+        replyTo: parentId,
+      },
+    ]);
+    setReplyText("");
+    setReplyingTo(null);
+  }
 
   return (
     <article>
@@ -47,17 +126,25 @@ export default function BlogPostPage({ params }: { params: { slug: string } }) {
           >
             <ArrowLeft className="h-3 w-3" /> All blogs
           </Link>
-          <span className="chip-blood w-fit">{post.category}</span>
+          <Link
+            href={`/blogs?category=${encodeURIComponent(post.category)}`}
+            className="chip-blood w-fit hover:opacity-80 transition"
+          >
+            {post.category}
+          </Link>
           <h1 className="mt-3 max-w-4xl heading-display text-3xl text-white sm:text-5xl">
             {post.title}
           </h1>
           <div className="mt-5 flex flex-wrap items-center gap-4 text-sm text-ink-300">
-            <span className="inline-flex items-center gap-2">
+            <Link
+              href={`/blogs?author=${encodeURIComponent(post.author.name)}`}
+              className="inline-flex items-center gap-2 hover:text-white transition"
+            >
               <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-blood-500 text-xs font-bold text-white">
                 {post.author.avatarInitials}
               </span>
-              <span className="font-semibold text-white">{post.author.name}</span>
-            </span>
+              <span className="font-semibold text-white hover:underline">{post.author.name}</span>
+            </Link>
             <span>·</span>
             <span>{formatDate(post.publishedAt)}</span>
             <span className="inline-flex items-center gap-1">
@@ -113,54 +200,123 @@ export default function BlogPostPage({ params }: { params: { slug: string } }) {
 
           {/* Actions */}
           <div className="mt-10 flex flex-wrap items-center gap-3 border-t border-ink-800 pt-6">
-            <button className="btn-secondary">
-              <Bookmark className="h-4 w-4" /> Save
+            <button onClick={handleSave} className={`btn-secondary ${saved ? "border-blood-500/50 text-blood-500" : ""}`}>
+              {saved ? <BookmarkCheck className="h-4 w-4" /> : <Bookmark className="h-4 w-4" />}
+              {saved ? "Saved" : "Save"}
             </button>
-            <button className="btn-secondary">
-              <Share2 className="h-4 w-4" /> Share
+            <button onClick={handleShare} className="btn-secondary">
+              {shareLabel === "Link copied!" ? <Check className="h-4 w-4" /> : <Share2 className="h-4 w-4" />}
+              {shareLabel}
             </button>
-            <button className="btn-secondary">
+            <button onClick={handleJumpToComments} className="btn-secondary">
               <MessageSquare className="h-4 w-4" /> Jump to comments
             </button>
           </div>
 
           {/* Comments */}
-          <section className="mt-12">
-            <h2 className="heading-display text-2xl text-white">Comments (24)</h2>
-            <form className="mt-4 card p-4">
+          <section ref={commentsRef} className="mt-12">
+            <h2 className="heading-display text-2xl text-white">Comments ({comments.length})</h2>
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                handlePostComment();
+              }}
+              className="mt-4 card p-4"
+            >
               <textarea
+                ref={commentInputRef}
                 rows={3}
+                value={commentText}
+                onChange={(e) => setCommentText(e.target.value)}
                 placeholder="Share your take. Be respectful — read the community guidelines."
                 className="input resize-none"
               />
               <div className="mt-3 flex items-center justify-between">
                 <span className="text-xs text-ink-400">Markdown supported.</span>
-                <button className="btn-primary">Post comment</button>
+                <button type="submit" disabled={!commentText.trim()} className="btn-primary disabled:opacity-50">
+                  Post comment
+                </button>
               </div>
             </form>
 
             <div className="mt-6 space-y-4">
-              {[
-                {
-                  user: "fightnerd99",
-                  flair: "MMA Fan",
-                  body: "Footwork take is spot on. People keep talking about power, but the angles are everything in this matchup.",
-                },
-                {
-                  user: "coachJay",
-                  flair: "Coach",
-                  body: "Agree on key #2. The minute he starts retreating in straight lines, this becomes a problem.",
-                },
-              ].map((c) => (
-                <div key={c.user} className="card p-4">
-                  <div className="flex items-center gap-2 text-xs text-ink-300">
-                    <span className="font-bold text-white">{c.user}</span>
-                    <span className="chip">{c.flair}</span>
-                    <span>· 2h ago</span>
-                  </div>
-                  <p className="mt-2 text-sm text-ink-200">{c.body}</p>
-                </div>
-              ))}
+              {comments
+                .filter((c) => !c.replyTo)
+                .map((c) => {
+                  const replies = comments.filter((r) => r.replyTo === c.id);
+                  return (
+                    <div key={c.id}>
+                      <div className="card p-4">
+                        <div className="flex items-center gap-2 text-xs text-ink-300">
+                          <span className="font-bold text-white">{c.user}</span>
+                          <span className="chip">{c.flair}</span>
+                          <span>· 2h ago</span>
+                        </div>
+                        <p className="mt-2 text-sm text-ink-200">{c.body}</p>
+                        <button
+                          onClick={() => {
+                            setReplyingTo(replyingTo === c.id ? null : c.id);
+                            setReplyText("");
+                          }}
+                          className="mt-2 inline-flex items-center gap-1 text-xs font-semibold text-ink-400 hover:text-white transition"
+                        >
+                          <Reply className="h-3 w-3" /> Reply
+                        </button>
+
+                        {replyingTo === c.id && (
+                          <form
+                            onSubmit={(e) => {
+                              e.preventDefault();
+                              handlePostReply(c.id);
+                            }}
+                            className="mt-3 border-t border-ink-700 pt-3"
+                          >
+                            <textarea
+                              rows={2}
+                              value={replyText}
+                              onChange={(e) => setReplyText(e.target.value)}
+                              placeholder={`Reply to ${c.user}…`}
+                              className="input resize-none text-sm"
+                              autoFocus
+                            />
+                            <div className="mt-2 flex items-center gap-2 justify-end">
+                              <button
+                                type="button"
+                                onClick={() => setReplyingTo(null)}
+                                className="btn-ghost text-xs"
+                              >
+                                Cancel
+                              </button>
+                              <button
+                                type="submit"
+                                disabled={!replyText.trim()}
+                                className="btn-primary text-xs disabled:opacity-50"
+                              >
+                                Post reply
+                              </button>
+                            </div>
+                          </form>
+                        )}
+                      </div>
+
+                      {/* Replies */}
+                      {replies.length > 0 && (
+                        <div className="ml-6 mt-2 space-y-2 border-l-2 border-ink-700 pl-4">
+                          {replies.map((r) => (
+                            <div key={r.id} className="card p-3">
+                              <div className="flex items-center gap-2 text-xs text-ink-300">
+                                <span className="font-bold text-white">{r.user}</span>
+                                <span className="chip">{r.flair}</span>
+                                <span>· just now</span>
+                              </div>
+                              <p className="mt-1 text-sm text-ink-200">{r.body}</p>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
             </div>
           </section>
         </div>
@@ -169,15 +325,18 @@ export default function BlogPostPage({ params }: { params: { slug: string } }) {
         <aside className="space-y-6 lg:sticky lg:top-24 self-start">
           <div className="card p-5">
             <div className="eyebrow mb-2">About the author</div>
-            <div className="flex items-center gap-3">
+            <Link
+              href={`/blogs?author=${encodeURIComponent(post.author.name)}`}
+              className="flex items-center gap-3 group"
+            >
               <span className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-blood-500 text-sm font-bold text-white">
                 {post.author.avatarInitials}
               </span>
               <div>
-                <div className="font-semibold text-white">{post.author.name}</div>
+                <div className="font-semibold text-white group-hover:underline">{post.author.name}</div>
                 <div className="text-xs text-ink-400">Senior fight analyst</div>
               </div>
-            </div>
+            </Link>
             <p className="mt-3 text-sm text-ink-300">
               Former amateur boxer, full-time fight tape obsessive. Writes the weekly Round 1
               breakdown.
@@ -188,9 +347,13 @@ export default function BlogPostPage({ params }: { params: { slug: string } }) {
             <div className="eyebrow mb-2">Tags</div>
             <div className="flex flex-wrap gap-1.5">
               {post.tags.map((t) => (
-                <span key={t} className="chip">
+                <Link
+                  key={t}
+                  href={`/blogs?tag=${encodeURIComponent(t)}`}
+                  className="chip hover:border-ink-500 hover:text-white transition"
+                >
                   #{t}
-                </span>
+                </Link>
               ))}
             </div>
           </div>
