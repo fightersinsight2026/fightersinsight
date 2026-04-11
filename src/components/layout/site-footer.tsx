@@ -80,7 +80,7 @@ export function SiteFooter() {
         <div className="mt-12 flex flex-col gap-3 border-t border-ink-800/80 pt-6 text-xs text-ink-400 sm:flex-row sm:items-center sm:justify-between">
           <div>© {new Date().getFullYear()} The Fighter&apos;s Insight. All rights reserved.</div>
           <div>
-            Forum advice is not professional coaching or medical advice. Train safe.
+            Forum advice is not professional coaching or medical advice. Train safe. Made with passion for the fight community.
           </div>
         </div>
       </div>
