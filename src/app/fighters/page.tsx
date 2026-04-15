@@ -3,6 +3,7 @@
 import { useState, useMemo, useEffect } from "react";
 import { FighterCard } from "@/components/cards/fighter-card";
 import { MOCK_FIGHTERS } from "@/lib/mock-data";
+import Image from "next/image";
 import { Search, Heart } from "lucide-react";
 
 const WEIGHT_CLASSES = [
@@ -17,7 +18,33 @@ const WEIGHT_CLASSES = [
   "Heavyweight",
 ];
 
-const PROMOTIONS = ["UFC", "Boxing", "ONE", "Bellator", "PFL"];
+const PROMOTIONS = [
+  {
+    name: "UFC",
+    image: "https://images.unsplash.com/photo-1517649763962-0c623066013b?auto=format&fit=crop&w=600&q=80",
+    desc: "Premier MMA promotion",
+  },
+  {
+    name: "Boxing",
+    image: "https://images.unsplash.com/photo-1549719386-74dfcbf7dbed?auto=format&fit=crop&w=600&q=80",
+    desc: "The sweet science",
+  },
+  {
+    name: "ONE",
+    image: "https://images.unsplash.com/photo-1606921231101-6f0a09f63a13?auto=format&fit=crop&w=600&q=80",
+    desc: "Asia's largest promotion",
+  },
+  {
+    name: "Bellator",
+    image: "https://images.unsplash.com/photo-1593079831268-3381b0db4a77?auto=format&fit=crop&w=600&q=80",
+    desc: "Global MMA contender",
+  },
+  {
+    name: "PFL",
+    image: "https://images.unsplash.com/photo-1518609571773-39b7d303a87b?auto=format&fit=crop&w=600&q=80",
+    desc: "Season format MMA",
+  },
+];
 
 export default function FightersPage() {
   const [query, setQuery] = useState("");
@@ -118,29 +145,44 @@ export default function FightersPage() {
         <h2 className="heading-display text-2xl text-white mb-2">Pick an organization</h2>
         <p className="text-sm text-ink-400 mb-6">Select a promotion to browse fighters.</p>
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
-          {PROMOTIONS.map((p) => (
-            <button
-              key={p}
-              type="button"
-              onClick={() => {
-                setSelectedPromotion(selectedPromotion === p ? null : p);
-                setActiveWeight("All");
-                setQuery("");
-              }}
-              className={`card p-5 text-center transition cursor-pointer ${
-                selectedPromotion === p
-                  ? "border-blood-500/50 ring-1 ring-blood-500/30 bg-blood-500/5"
-                  : "hover:border-ink-500 hover:bg-ink-800/50"
-              }`}
-            >
-              <div className={`heading-display text-2xl ${selectedPromotion === p ? "text-blood-500" : "text-white"}`}>
-                {p}
-              </div>
-              <div className="text-xs text-ink-400 mt-1">
-                {MOCK_FIGHTERS.filter((f) => f.promotion === p).length} fighters
-              </div>
-            </button>
-          ))}
+          {PROMOTIONS.map((p) => {
+            const isActive = selectedPromotion === p.name;
+            const count = MOCK_FIGHTERS.filter((f) => f.promotion === p.name).length;
+            return (
+              <button
+                key={p.name}
+                type="button"
+                onClick={() => {
+                  setSelectedPromotion(isActive ? null : p.name);
+                  setActiveWeight("All");
+                  setQuery("");
+                }}
+                className={`card group relative overflow-hidden transition cursor-pointer aspect-[4/3] ${
+                  isActive
+                    ? "border-blood-500/50 ring-2 ring-blood-500/40"
+                    : "hover:border-ink-500"
+                }`}
+              >
+                <Image
+                  src={p.image}
+                  alt={p.name}
+                  fill
+                  sizes="(max-width:768px) 50vw, 20vw"
+                  className="object-cover transition duration-500 group-hover:scale-105"
+                />
+                <div className={`absolute inset-0 transition ${isActive ? "bg-blood-500/40" : "bg-ink-950/60 group-hover:bg-ink-950/50"}`} />
+                <div className="relative flex flex-col items-center justify-center h-full">
+                  <div className={`heading-display text-3xl drop-shadow-lg ${isActive ? "text-white" : "text-white"}`}>
+                    {p.name}
+                  </div>
+                  <div className="text-xs text-ink-200 mt-1">{p.desc}</div>
+                  <div className="text-[11px] text-ink-300 mt-2 uppercase tracking-wider font-semibold">
+                    {count} fighters
+                  </div>
+                </div>
+              </button>
+            );
+          })}
         </div>
       </section>
 
