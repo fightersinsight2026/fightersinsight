@@ -6,9 +6,8 @@ import { MOCK_FIGHTERS } from "@/lib/mock-data";
 import Image from "next/image";
 import { Search, Heart } from "lucide-react";
 
-const WEIGHT_CLASSES = [
-  "All",
-  "Strawweight",
+const MENS_WEIGHT_CLASSES = [
+  "Flyweight",
   "Bantamweight",
   "Featherweight",
   "Lightweight",
@@ -16,6 +15,13 @@ const WEIGHT_CLASSES = [
   "Middleweight",
   "Light Heavyweight",
   "Heavyweight",
+];
+
+const WOMENS_WEIGHT_CLASSES = [
+  "W-Strawweight",
+  "W-Flyweight",
+  "W-Bantamweight",
+  "W-Featherweight",
 ];
 
 const PROMOTIONS = [
@@ -97,11 +103,22 @@ export default function FightersPage() {
     );
   }, [selectedPromotion]);
 
-  // Available weight classes for the selected promotion
-  const availableWeightClasses = useMemo(() => {
+  // Available weight classes for the selected promotion, split by men's/women's
+  const allClasses = useMemo(() => {
     const classes = new Set(promotionFighters.map((f) => f.weightClass));
-    return WEIGHT_CLASSES.filter((w) => w !== "All" && classes.has(w));
-  }, [promotionFighters]);
+    // Also include champion weight classes
+    champions.forEach((f) => classes.add(f.weightClass));
+    return classes;
+  }, [promotionFighters, champions]);
+
+  const availableMens = useMemo(
+    () => MENS_WEIGHT_CLASSES.filter((w) => allClasses.has(w)),
+    [allClasses]
+  );
+  const availableWomens = useMemo(
+    () => WOMENS_WEIGHT_CLASSES.filter((w) => allClasses.has(w)),
+    [allClasses]
+  );
 
   // Non-champion fighters filtered by weight class + search
   const filtered = useMemo(() => {
@@ -225,25 +242,57 @@ export default function FightersPage() {
 
           {/* Weight class tabs + search */}
           <section className="container-fi py-10 pb-16">
-            <h2 className="heading-display text-2xl text-white mb-2">Browse by weight class</h2>
-            <p className="text-sm text-ink-400 mb-5">Select a division to see ranked fighters and contenders.</p>
+            <h2 className="heading-display text-2xl text-white mb-6">Browse by weight class</h2>
 
-            <div className="flex flex-wrap gap-2 mb-6">
-              {availableWeightClasses.map((w) => (
-                <button
-                  key={w}
-                  type="button"
-                  onClick={() => setActiveWeight(activeWeight === w ? "All" : w)}
-                  className={`chip cursor-pointer transition ${
-                    w === activeWeight
-                      ? "border-blood-500/50 bg-blood-500/10 text-white"
-                      : "hover:border-ink-500 hover:text-white"
-                  }`}
-                >
-                  {w}
-                </button>
-              ))}
-            </div>
+            {/* Men's divisions */}
+            {availableMens.length > 0 && (
+              <div className="mb-4">
+                <div className="text-xs font-semibold uppercase tracking-wider text-ink-400 mb-2">Men&apos;s divisions</div>
+                <div className="flex flex-wrap gap-0 rounded-lg border border-ink-700 overflow-hidden w-fit">
+                  {availableMens.map((w, i) => (
+                    <button
+                      key={w}
+                      type="button"
+                      onClick={() => setActiveWeight(activeWeight === w ? "All" : w)}
+                      className={`px-4 py-2.5 text-sm font-semibold transition ${
+                        i > 0 ? "border-l border-ink-700" : ""
+                      } ${
+                        w === activeWeight
+                          ? "bg-blood-500 text-white"
+                          : "bg-ink-850 text-ink-300 hover:bg-ink-800 hover:text-white"
+                      }`}
+                    >
+                      {w}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Women's divisions */}
+            {availableWomens.length > 0 && (
+              <div className="mb-6">
+                <div className="text-xs font-semibold uppercase tracking-wider text-ink-400 mb-2">Women&apos;s divisions</div>
+                <div className="flex flex-wrap gap-0 rounded-lg border border-ink-700 overflow-hidden w-fit">
+                  {availableWomens.map((w, i) => (
+                    <button
+                      key={w}
+                      type="button"
+                      onClick={() => setActiveWeight(activeWeight === w ? "All" : w)}
+                      className={`px-4 py-2.5 text-sm font-semibold transition ${
+                        i > 0 ? "border-l border-ink-700" : ""
+                      } ${
+                        w === activeWeight
+                          ? "bg-blood-500 text-white"
+                          : "bg-ink-850 text-ink-300 hover:bg-ink-800 hover:text-white"
+                      }`}
+                    >
+                      {w.replace("W-", "")}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
 
             {activeWeight === "All" ? (
               <div className="card p-10 text-center text-ink-300">
