@@ -73,25 +73,16 @@ function BlogsContent() {
           </p>
 
           <div className="mt-8 flex flex-col gap-4 lg:flex-row lg:items-center">
-            <form
-              onSubmit={(e) => e.preventDefault()}
-              className="relative flex-1 max-w-lg flex items-center gap-2"
-            >
-              <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-400" />
-                <input
-                  type="search"
-                  value={query}
-                  onChange={(e) => setQuery(e.target.value)}
-                  placeholder="Search articles, fighters, gyms…"
-                  className="input pl-10"
-                />
-              </div>
-              <button type="submit" className="btn-primary h-[42px] px-5 text-base">
-                <Search className="h-5 w-5" />
-                Search
-              </button>
-            </form>
+            <div className="relative flex-1 max-w-xl">
+              <Search className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-ink-400" />
+              <input
+                type="search"
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder="Search articles, fighters, gyms…"
+                className="input pl-12 py-3.5 text-base"
+              />
+            </div>
             <div className="flex flex-wrap gap-2">
               {CATEGORIES.map((c) => (
                 <button
