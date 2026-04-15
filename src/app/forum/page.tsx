@@ -1,16 +1,71 @@
+"use client";
+
+import { useState, useMemo } from "react";
 import Link from "next/link";
 import { ThreadRow } from "@/components/cards/thread-row";
 import { FORUM_CATEGORIES, MOCK_THREADS } from "@/lib/mock-data";
-import { Search, Plus, Flame, Clock, TrendingUp } from "lucide-react";
-import type { Metadata } from "next";
+import { Search, Plus, Flame, Clock, TrendingUp, User } from "lucide-react";
 
-export const metadata: Metadata = {
-  title: "Forum — Combat sports community discussion",
-  description:
-    "Join the conversation on UFC, boxing, MMA, Muay Thai, BJJ, and more. Ask questions, share takes, get advice.",
-};
+type SortMode = "hot" | "top" | "new" | "mine";
 
 export default function ForumPage() {
+  const [query, setQuery] = useState("");
+  const [sort, setSort] = useState<SortMode>("hot");
+
+  const filtered = useMemo(() => {
+    let threads = [...MOCK_THREADS];
+
+    // My Posts — show only threads by "you" (simulated: show first 2 as "your" posts)
+    if (sort === "mine") {
+      threads = threads.filter(
+        (t) => t.user.name === "TheFightDoctor" || t.user.name === "kickheavy"
+      );
+    }
+
+    // Search filter
+    if (query.trim()) {
+      const q = query.toLowerCase();
+      threads = threads.filter(
+        (t) =>
+          t.title.toLowerCase().includes(q) ||
+          t.category.toLowerCase().includes(q) ||
+          t.user.name.toLowerCase().includes(q) ||
+          (t.tag && t.tag.toLowerCase().includes(q))
+      );
+    }
+
+    // Sort
+    switch (sort) {
+      case "hot":
+        threads.sort((a, b) => {
+          if (a.pinned && !b.pinned) return -1;
+          if (!a.pinned && b.pinned) return 1;
+          return b.upvotes + b.replies * 2 - (a.upvotes + a.replies * 2);
+        });
+        break;
+      case "top":
+        threads.sort((a, b) => b.upvotes - a.upvotes);
+        break;
+      case "new":
+        threads.sort(
+          (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+        );
+        break;
+      case "mine":
+        // already filtered above, keep default order
+        break;
+    }
+
+    return threads;
+  }, [query, sort]);
+
+  const sortButtons: { key: SortMode; label: string; icon: React.ReactNode }[] = [
+    { key: "hot", label: "Hot", icon: <Flame className="h-4 w-4" /> },
+    { key: "top", label: "Top", icon: <TrendingUp className="h-4 w-4" /> },
+    { key: "new", label: "New", icon: <Clock className="h-4 w-4" /> },
+    { key: "mine", label: "My Posts", icon: <User className="h-4 w-4" /> },
+  ];
+
   return (
     <>
       <section className="border-b border-ink-800/80">
@@ -36,20 +91,25 @@ export default function ForumPage() {
               <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-400" />
               <input
                 type="search"
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
                 placeholder="Search the forum…"
                 className="input pl-10"
               />
             </div>
             <div className="flex gap-2">
-              <button className="btn-secondary inline-flex items-center gap-1.5">
-                <Flame className="h-4 w-4 text-blood-500" /> Hot
-              </button>
-              <button className="btn-ghost">
-                <TrendingUp className="h-4 w-4" /> Top
-              </button>
-              <button className="btn-ghost">
-                <Clock className="h-4 w-4" /> New
-              </button>
+              {sortButtons.map((s) => (
+                <button
+                  key={s.key}
+                  type="button"
+                  onClick={() => setSort(s.key)}
+                  className={`inline-flex items-center gap-1.5 ${
+                    sort === s.key ? "btn-secondary" : "btn-ghost"
+                  }`}
+                >
+                  {s.icon} {s.label}
+                </button>
+              ))}
             </div>
           </div>
         </div>
@@ -58,9 +118,15 @@ export default function ForumPage() {
       <div className="container-fi grid gap-8 py-10 lg:grid-cols-[1fr_280px]">
         {/* Threads */}
         <div className="space-y-3">
-          {MOCK_THREADS.map((t) => (
-            <ThreadRow key={t.id} thread={t} />
-          ))}
+          {filtered.length === 0 ? (
+            <div className="card p-8 text-center text-ink-300">
+              {sort === "mine"
+                ? "You haven't posted any threads yet."
+                : "No threads found. Try a different search."}
+            </div>
+          ) : (
+            filtered.map((t) => <ThreadRow key={t.id} thread={t} />)
+          )}
         </div>
 
         {/* Categories sidebar */}
@@ -75,7 +141,7 @@ export default function ForumPage() {
                   className="flex items-center justify-between rounded-md px-3 py-2 text-sm text-ink-200 hover:bg-ink-800 hover:text-white"
                 >
                   <span>{c.name}</span>
-                  <span className="text-[11px] text-ink-400">→</span>
+                  <span className="text-[11px] text-ink-400">&rarr;</span>
                 </Link>
               ))}
             </div>
@@ -88,7 +154,7 @@ export default function ForumPage() {
               coaching or medical advice — see a real coach for serious issues.
             </p>
             <Link href="/guidelines" className="mt-3 inline-block text-xs font-semibold text-blood-500">
-              Read full guidelines →
+              Read full guidelines &rarr;
             </Link>
           </div>
         </aside>
