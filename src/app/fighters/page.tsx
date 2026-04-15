@@ -81,17 +81,35 @@ export default function FightersPage() {
     [followedSlugs]
   );
 
-  const filtered = useMemo(() => {
+  // Fighters for the selected promotion (excluding followed)
+  const promotionFighters = useMemo(() => {
     if (!selectedPromotion) return [];
+    return MOCK_FIGHTERS.filter(
+      (f) => f.promotion === selectedPromotion && !followedSlugs.includes(f.slug)
+    );
+  }, [selectedPromotion, followedSlugs]);
 
-    let fighters = MOCK_FIGHTERS.filter((f) => f.promotion === selectedPromotion);
+  // Champions for the selected promotion (including followed — they appear in both sections)
+  const champions = useMemo(() => {
+    if (!selectedPromotion) return [];
+    return MOCK_FIGHTERS.filter(
+      (f) => f.promotion === selectedPromotion && f.rank === "C"
+    );
+  }, [selectedPromotion]);
 
-    // Remove followed fighters from the main grid
-    fighters = fighters.filter((f) => !followedSlugs.includes(f.slug));
+  // Available weight classes for the selected promotion
+  const availableWeightClasses = useMemo(() => {
+    const classes = new Set(promotionFighters.map((f) => f.weightClass));
+    return WEIGHT_CLASSES.filter((w) => w !== "All" && classes.has(w));
+  }, [promotionFighters]);
 
-    if (activeWeight !== "All") {
-      fighters = fighters.filter((f) => f.weightClass === activeWeight);
-    }
+  // Non-champion fighters filtered by weight class + search
+  const filtered = useMemo(() => {
+    if (!selectedPromotion || activeWeight === "All") return [];
+
+    let fighters = promotionFighters.filter(
+      (f) => f.weightClass === activeWeight && f.rank !== "C"
+    );
 
     if (query.trim()) {
       const q = query.toLowerCase();
@@ -99,13 +117,12 @@ export default function FightersPage() {
         (f) =>
           f.name.toLowerCase().includes(q) ||
           (f.nickname && f.nickname.toLowerCase().includes(q)) ||
-          f.country.toLowerCase().includes(q) ||
-          f.weightClass.toLowerCase().includes(q)
+          f.country.toLowerCase().includes(q)
       );
     }
 
     return fighters;
-  }, [query, selectedPromotion, activeWeight, followedSlugs]);
+  }, [query, selectedPromotion, activeWeight, promotionFighters]);
 
   return (
     <>
@@ -186,26 +203,37 @@ export default function FightersPage() {
         </div>
       </section>
 
-      {/* Fighters grid — only shows after selecting a promotion */}
+      {/* Champions + weight class browsing — only after selecting a promotion */}
       {selectedPromotion && (
-        <section className="container-fi pb-16">
-          <div className="flex flex-col gap-3 lg:flex-row lg:items-center mb-6">
-            <div className="relative flex-1 max-w-lg">
-              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-400" />
-              <input
-                type="search"
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                placeholder={`Search ${selectedPromotion} fighters…`}
-                className="input pl-10"
-              />
-            </div>
-            <div className="flex flex-wrap gap-2">
-              {WEIGHT_CLASSES.map((w) => (
+        <>
+          {/* Champions */}
+          {champions.length > 0 && (
+            <section className="border-b border-ink-800/80 bg-ink-900/40">
+              <div className="container-fi py-10">
+                <div className="eyebrow mb-2">Champions</div>
+                <h2 className="heading-display text-2xl text-white mb-6">
+                  {selectedPromotion} Division Champions
+                </h2>
+                <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                  {champions.map((f) => (
+                    <FighterCard key={f.id} fighter={f} />
+                  ))}
+                </div>
+              </div>
+            </section>
+          )}
+
+          {/* Weight class tabs + search */}
+          <section className="container-fi py-10 pb-16">
+            <h2 className="heading-display text-2xl text-white mb-2">Browse by weight class</h2>
+            <p className="text-sm text-ink-400 mb-5">Select a division to see ranked fighters and contenders.</p>
+
+            <div className="flex flex-wrap gap-2 mb-6">
+              {availableWeightClasses.map((w) => (
                 <button
                   key={w}
                   type="button"
-                  onClick={() => setActiveWeight(w)}
+                  onClick={() => setActiveWeight(activeWeight === w ? "All" : w)}
                   className={`chip cursor-pointer transition ${
                     w === activeWeight
                       ? "border-blood-500/50 bg-blood-500/10 text-white"
@@ -216,20 +244,39 @@ export default function FightersPage() {
                 </button>
               ))}
             </div>
-          </div>
 
-          {filtered.length === 0 ? (
-            <div className="card p-10 text-center text-ink-300">
-              No fighters found. Try a different search or weight class.
-            </div>
-          ) : (
-            <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-              {filtered.map((f) => (
-                <FighterCard key={f.id} fighter={f} />
-              ))}
-            </div>
-          )}
-        </section>
+            {activeWeight === "All" ? (
+              <div className="card p-10 text-center text-ink-300">
+                Pick a weight class above to browse fighters in that division.
+              </div>
+            ) : (
+              <>
+                <div className="relative max-w-lg mb-6">
+                  <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-400" />
+                  <input
+                    type="search"
+                    value={query}
+                    onChange={(e) => setQuery(e.target.value)}
+                    placeholder={`Search ${activeWeight} fighters…`}
+                    className="input pl-10"
+                  />
+                </div>
+
+                {filtered.length === 0 ? (
+                  <div className="card p-10 text-center text-ink-300">
+                    No fighters found. Try a different search.
+                  </div>
+                ) : (
+                  <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                    {filtered.map((f) => (
+                      <FighterCard key={f.id} fighter={f} />
+                    ))}
+                  </div>
+                )}
+              </>
+            )}
+          </section>
+        </>
       )}
     </>
   );
