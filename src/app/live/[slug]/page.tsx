@@ -219,66 +219,67 @@ export default function LiveEventPage() {
             <p className="text-xs text-ink-400 mb-4">Click a fight to see deeper stats.</p>
             <div className="space-y-3">
               {FIGHT_CARD.map((bout, i) => (
-                <button
-                  key={i}
-                  type="button"
-                  onClick={() => setSelectedFight(selectedFight === i ? null : i)}
-                  className={`card flex items-stretch overflow-hidden w-full text-left transition hover:border-ink-500 ${selectedFight === i ? "border-blood-500/50 ring-1 ring-blood-500/30" : ""}`}
-                >
-                  <div className="flex w-20 shrink-0 flex-col items-center justify-center border-r border-ink-700/70 bg-ink-900/60 p-2 text-center">
-                    {bout.main ? (
-                      <span className="chip-blood">Main</span>
-                    ) : bout.coMain ? (
-                      <span className="chip-gold">Co-Main</span>
-                    ) : (
-                      <span className="text-xs font-bold text-ink-300">Bout {i + 1}</span>
-                    )}
-                    <span className="mt-1 text-[10px] uppercase tracking-wider text-ink-400">
-                      {bout.weight}
-                    </span>
-                  </div>
-                  <div className="grid flex-1 grid-cols-[1fr_auto_1fr] items-center gap-3 p-4">
-                    <div className="text-right">
-                      <div className="font-bold text-white">{bout.a.name}</div>
-                      <div className="text-xs text-ink-400">{bout.a.record}</div>
-                    </div>
-                    <div className="flex flex-col items-center gap-1">
-                      <span className="heading-display text-sm text-blood-500">VS</span>
-                      {selectedFight === i ? (
-                        <ChevronUp className="h-3 w-3 text-ink-400" />
+                <div key={i}>
+                  <button
+                    type="button"
+                    onClick={() => setSelectedFight(selectedFight === i ? null : i)}
+                    className={`card flex items-stretch overflow-hidden w-full text-left transition hover:border-ink-500 ${selectedFight === i ? "border-blood-500/50 ring-1 ring-blood-500/30" : ""}`}
+                  >
+                    <div className="flex w-20 shrink-0 flex-col items-center justify-center border-r border-ink-700/70 bg-ink-900/60 p-2 text-center">
+                      {bout.main ? (
+                        <span className="chip-blood">Main</span>
+                      ) : bout.coMain ? (
+                        <span className="chip-gold">Co-Main</span>
                       ) : (
-                        <ChevronDown className="h-3 w-3 text-ink-400" />
+                        <span className="text-xs font-bold text-ink-300">Bout {i + 1}</span>
                       )}
+                      <span className="mt-1 text-[10px] uppercase tracking-wider text-ink-400">
+                        {bout.weight}
+                      </span>
                     </div>
-                    <div className="text-left">
-                      <div className="font-bold text-white">{bout.b.name}</div>
-                      <div className="text-xs text-ink-400">{bout.b.record}</div>
+                    <div className="grid flex-1 grid-cols-[1fr_auto_1fr] items-center gap-3 p-4">
+                      <div className="text-right">
+                        <div className="font-bold text-white">{bout.a.name}</div>
+                        <div className="text-xs text-ink-400">{bout.a.record}</div>
+                      </div>
+                      <div className="flex flex-col items-center gap-1">
+                        <span className="heading-display text-sm text-blood-500">VS</span>
+                        {selectedFight === i ? (
+                          <ChevronUp className="h-3 w-3 text-ink-400" />
+                        ) : (
+                          <ChevronDown className="h-3 w-3 text-ink-400" />
+                        )}
+                      </div>
+                      <div className="text-left">
+                        <div className="font-bold text-white">{bout.b.name}</div>
+                        <div className="text-xs text-ink-400">{bout.b.record}</div>
+                      </div>
                     </div>
-                  </div>
-                </button>
+                  </button>
+
+                  {/* Expanded fight stats — renders directly below this fight */}
+                  {selectedFight === i && (
+                    <div className="mt-2 card p-5">
+                      <div className="flex items-center justify-between mb-4">
+                        <h3 className="font-semibold text-white">
+                          {bout.a.name} vs {bout.b.name}
+                        </h3>
+                        <button onClick={() => setSelectedFight(null)} className="text-ink-400 hover:text-white">
+                          <X className="h-4 w-4" />
+                        </button>
+                      </div>
+                      <StatRow label="Record" a={bout.a.record} b={bout.b.record} />
+                      <StatRow label="Age" a={String(bout.a.age)} b={String(bout.b.age)} />
+                      <StatRow label="Height" a={bout.a.height} b={bout.b.height} />
+                      <StatRow label="Reach" a={bout.a.reach} b={bout.b.reach} />
+                      <StatRow label="Stance" a={bout.a.stance} b={bout.b.stance} />
+                      <StatRow label="Style" a={bout.a.style} b={bout.b.style} />
+                      <StatRow label="Country" a={bout.a.country} b={bout.b.country} />
+                    </div>
+                  )}
+                </div>
               ))}
             </div>
-
-            {/* Expanded fight stats */}
-            {selectedFight !== null && (
-              <div className="mt-3 card p-5 animate-in">
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="font-semibold text-white">
-                    {FIGHT_CARD[selectedFight].a.name} vs {FIGHT_CARD[selectedFight].b.name}
-                  </h3>
-                  <button onClick={() => setSelectedFight(null)} className="text-ink-400 hover:text-white">
-                    <X className="h-4 w-4" />
-                  </button>
-                </div>
-                <StatRow label="Record" a={FIGHT_CARD[selectedFight].a.record} b={FIGHT_CARD[selectedFight].b.record} />
-                <StatRow label="Age" a={String(FIGHT_CARD[selectedFight].a.age)} b={String(FIGHT_CARD[selectedFight].b.age)} />
-                <StatRow label="Height" a={FIGHT_CARD[selectedFight].a.height} b={FIGHT_CARD[selectedFight].b.height} />
-                <StatRow label="Reach" a={FIGHT_CARD[selectedFight].a.reach} b={FIGHT_CARD[selectedFight].b.reach} />
-                <StatRow label="Stance" a={FIGHT_CARD[selectedFight].a.stance} b={FIGHT_CARD[selectedFight].b.stance} />
-                <StatRow label="Style" a={FIGHT_CARD[selectedFight].a.style} b={FIGHT_CARD[selectedFight].b.style} />
-                <StatRow label="Country" a={FIGHT_CARD[selectedFight].a.country} b={FIGHT_CARD[selectedFight].b.country} />
-              </div>
-            )}
           </section>
 
           {/* Live chat */}

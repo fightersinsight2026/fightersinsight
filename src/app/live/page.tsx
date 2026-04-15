@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 };
 
 const WATCH_LINKS = [
-  { name: "ESPN+", href: "https://www.espn.com/espnplus/", tag: "UFC" },
+  { name: "Paramount+", href: "https://www.paramountplus.com/", tag: "UFC / CBS Sports" },
   { name: "DAZN", href: "https://www.dazn.com/", tag: "Boxing / MMA" },
   { name: "UFC Fight Pass", href: "https://www.ufc.com/fight-pass", tag: "UFC Prelims" },
   { name: "Showtime Sports", href: "https://www.sho.com/sports", tag: "Boxing" },
