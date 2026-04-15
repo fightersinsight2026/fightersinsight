@@ -15,11 +15,9 @@ export default function ForumPage() {
   const filtered = useMemo(() => {
     let threads = [...MOCK_THREADS];
 
-    // My Posts — show only threads by "you" (simulated: show first 2 as "your" posts)
+    // My Posts — only show threads the user created this session
     if (sort === "mine") {
-      threads = threads.filter(
-        (t) => t.user.name === "TheFightDoctor" || t.user.name === "kickheavy"
-      );
+      threads = threads.filter((t) => t.user.name === "you");
     }
 
     // Search filter
