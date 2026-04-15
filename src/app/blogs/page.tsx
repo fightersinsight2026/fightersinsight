@@ -72,15 +72,15 @@ function BlogsContent() {
             and writers — not recycled press releases.
           </p>
 
-          <div className="mt-8 flex flex-col gap-4 lg:flex-row lg:items-center">
-            <div className="relative flex-1 max-w-xl">
-              <Search className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-ink-400" />
+          <div className="mt-8 flex flex-col gap-4">
+            <div className="relative w-full max-w-2xl">
+              <Search className="absolute left-5 top-1/2 h-6 w-6 -translate-y-1/2 text-ink-400" />
               <input
                 type="search"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 placeholder="Search articles, fighters, gyms…"
-                className="input pl-12 py-3.5 text-base"
+                className="w-full rounded-lg border border-ink-600 bg-ink-850 pl-14 pr-5 py-4 text-lg text-ink-100 placeholder:text-ink-400 focus:outline-none focus:ring-2 focus:ring-blood-500/60 focus:border-blood-500/60"
               />
             </div>
             <div className="flex flex-wrap gap-2">
