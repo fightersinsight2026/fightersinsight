@@ -1,14 +1,10 @@
+"use client";
+
+import { useState, useMemo } from "react";
 import Link from "next/link";
 import { GymCard } from "@/components/cards/gym-card";
 import { COMBAT_STYLES, MOCK_GYMS } from "@/lib/mock-data";
-import { MapPin, Search, Filter, Compass, Heart, ShieldCheck, Sparkles } from "lucide-react";
-import type { Metadata } from "next";
-
-export const metadata: Metadata = {
-  title: "Start Training — Find gyms, trainers, and beginner guides",
-  description:
-    "Find beginner-friendly boxing, MMA, Muay Thai, and BJJ gyms near you. Real coach reviews. No experience needed.",
-};
+import { MapPin, Search, Filter, Compass, Heart, ShieldCheck, Sparkles, ArrowRight, RotateCcw, CheckCircle2 } from "lucide-react";
 
 const FIRST_WEEK = [
   {
@@ -33,7 +29,126 @@ const FIRST_WEEK = [
   },
 ];
 
+// ── Quiz data ────────────────────────────────────────────────
+const QUIZ_QUESTIONS = [
+  {
+    q: "What's your main reason for training?",
+    options: [
+      { label: "Self-defense", scores: { Boxing: 2, MMA: 3, "Muay Thai": 2, BJJ: 3 } },
+      { label: "Get in shape / cardio", scores: { Boxing: 3, "Muay Thai": 3, Kickboxing: 3 } },
+      { label: "Compete one day", scores: { MMA: 3, Wrestling: 2, BJJ: 2, Boxing: 2 } },
+      { label: "Just curious / fun", scores: { BJJ: 2, "Muay Thai": 2, Kickboxing: 3, Boxing: 2 } },
+    ],
+  },
+  {
+    q: "How do you prefer to solve problems?",
+    options: [
+      { label: "Quick and decisive", scores: { Boxing: 3, MMA: 2, Kickboxing: 2 } },
+      { label: "Patient and strategic", scores: { BJJ: 3, Wrestling: 2, "Muay Thai": 2 } },
+      { label: "Adapt on the fly", scores: { MMA: 3, "Muay Thai": 2, BJJ: 2 } },
+      { label: "Overpower and control", scores: { Wrestling: 3, MMA: 2, BJJ: 2 } },
+    ],
+  },
+  {
+    q: "Which sounds more appealing?",
+    options: [
+      { label: "Learning to throw a perfect punch", scores: { Boxing: 3, Kickboxing: 2 } },
+      { label: "Submitting someone twice my size", scores: { BJJ: 3, Wrestling: 2 } },
+      { label: "Using kicks, knees, and elbows", scores: { "Muay Thai": 3, Kickboxing: 2 } },
+      { label: "Being ready for anything", scores: { MMA: 3, Wrestling: 1 } },
+    ],
+  },
+  {
+    q: "How do you feel about close contact / grappling?",
+    options: [
+      { label: "Love it — bring on the ground work", scores: { BJJ: 3, Wrestling: 3, MMA: 2 } },
+      { label: "Fine in the clinch but prefer standing", scores: { "Muay Thai": 3, Boxing: 2, MMA: 1 } },
+      { label: "I'd rather keep my distance and strike", scores: { Boxing: 3, Kickboxing: 3 } },
+      { label: "I want to learn both", scores: { MMA: 3, "Muay Thai": 1, BJJ: 1 } },
+    ],
+  },
+  {
+    q: "What kind of workout do you prefer?",
+    options: [
+      { label: "High intensity cardio bursts", scores: { Boxing: 3, "Muay Thai": 2, Kickboxing: 3 } },
+      { label: "Technical drilling and problem solving", scores: { BJJ: 3, Wrestling: 2 } },
+      { label: "Full-body functional strength", scores: { Wrestling: 3, MMA: 2 } },
+      { label: "Mix of everything", scores: { MMA: 3, "Muay Thai": 2 } },
+    ],
+  },
+];
+
+type Scores = Record<string, number | undefined>;
+
+const DISCIPLINE_FILTERS = [
+  "All disciplines",
+  "Boxing",
+  "Muay Thai",
+  "BJJ",
+  "MMA",
+  "Beginner friendly",
+];
+
 export default function StartTrainingPage() {
+  // Quiz state
+  const [quizStep, setQuizStep] = useState(0);
+  const [quizScores, setQuizScores] = useState<Record<string, number>>({});
+  const [quizDone, setQuizDone] = useState(false);
+
+  // Gym filters
+  const [locationQuery, setLocationQuery] = useState("");
+  const [activeDiscipline, setActiveDiscipline] = useState("All disciplines");
+
+  function handleQuizAnswer(optionScores: Scores) {
+    const newScores = { ...quizScores };
+    for (const [style, pts] of Object.entries(optionScores)) {
+      if (pts != null) newScores[style] = (newScores[style] ?? 0) + pts;
+    }
+    setQuizScores(newScores);
+
+    if (quizStep < QUIZ_QUESTIONS.length - 1) {
+      setQuizStep(quizStep + 1);
+    } else {
+      setQuizDone(true);
+    }
+  }
+
+  function resetQuiz() {
+    setQuizStep(0);
+    setQuizScores({});
+    setQuizDone(false);
+  }
+
+  const quizResult = useMemo(() => {
+    if (!quizDone) return null;
+    const sorted = Object.entries(quizScores).sort(([, a], [, b]) => b - a);
+    return sorted.slice(0, 3).map(([name, score]) => ({ name, score }));
+  }, [quizDone, quizScores]);
+
+  const filteredGyms = useMemo(() => {
+    let gyms = MOCK_GYMS;
+
+    if (activeDiscipline === "Beginner friendly") {
+      gyms = gyms.filter((g) => g.beginnerFriendly);
+    } else if (activeDiscipline !== "All disciplines") {
+      gyms = gyms.filter((g) =>
+        g.disciplines.some((d) => d.toLowerCase().includes(activeDiscipline.toLowerCase()))
+      );
+    }
+
+    if (locationQuery.trim()) {
+      const q = locationQuery.toLowerCase();
+      gyms = gyms.filter(
+        (g) =>
+          g.city.toLowerCase().includes(q) ||
+          g.state.toLowerCase().includes(q) ||
+          g.name.toLowerCase().includes(q)
+      );
+    }
+
+    return gyms;
+  }, [activeDiscipline, locationQuery]);
+
   return (
     <>
       {/* Hero */}
@@ -59,33 +174,127 @@ export default function StartTrainingPage() {
                 <MapPin className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-blood-500" />
                 <input
                   type="text"
+                  value={locationQuery}
+                  onChange={(e) => setLocationQuery(e.target.value)}
                   placeholder="Enter your city or zip code"
                   className="input pl-10"
                 />
               </div>
-              <button className="btn-primary shrink-0">
+              <button
+                onClick={() => {/* search already filters live */}}
+                className="btn-primary shrink-0"
+              >
                 <Search className="h-4 w-4" /> Find gyms near me
               </button>
             </div>
-            <button className="mt-3 inline-flex items-center gap-1.5 text-xs font-semibold text-ink-300 hover:text-white">
+            <button
+              onClick={() => setLocationQuery("")}
+              className="mt-3 inline-flex items-center gap-1.5 text-xs font-semibold text-ink-300 hover:text-white"
+            >
               <Compass className="h-3 w-3" /> Or use my current location
             </button>
           </div>
         </div>
       </section>
 
-      {/* Combat style guide */}
+      {/* Fighting Style Quiz */}
       <section id="guide" className="container-fi py-16">
-        <div className="eyebrow mb-3">Which sport fits you?</div>
+        <div className="eyebrow mb-3">Find your fighting style</div>
         <h2 className="heading-display text-3xl text-white sm:text-4xl">
-          Pick your fighting style.
+          Take the quiz.
         </h2>
         <p className="mt-2 max-w-2xl text-ink-300">
-          Every discipline has a different vibe. Here&apos;s a quick comparison so you can walk into
-          the right room.
+          Answer 5 quick questions and we&apos;ll recommend the best combat sport for you.
         </p>
 
-        <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="mt-8 max-w-2xl">
+          {!quizDone ? (
+            <div className="card p-6">
+              {/* Progress */}
+              <div className="flex items-center justify-between mb-4">
+                <span className="text-xs font-semibold text-ink-400">
+                  Question {quizStep + 1} of {QUIZ_QUESTIONS.length}
+                </span>
+                <div className="flex gap-1">
+                  {QUIZ_QUESTIONS.map((_, i) => (
+                    <div
+                      key={i}
+                      className={`h-1.5 w-8 rounded-full transition ${
+                        i <= quizStep ? "bg-blood-500" : "bg-ink-700"
+                      }`}
+                    />
+                  ))}
+                </div>
+              </div>
+
+              <h3 className="heading-display text-xl text-white">
+                {QUIZ_QUESTIONS[quizStep].q}
+              </h3>
+
+              <div className="mt-5 space-y-2">
+                {QUIZ_QUESTIONS[quizStep].options.map((opt) => (
+                  <button
+                    key={opt.label}
+                    type="button"
+                    onClick={() => handleQuizAnswer(opt.scores)}
+                    className="w-full rounded-lg border border-ink-700 bg-ink-900 px-4 py-3 text-left text-sm font-semibold text-ink-200 transition hover:border-blood-500/50 hover:bg-ink-850 hover:text-white"
+                  >
+                    {opt.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+          ) : (
+            <div className="card p-6">
+              <div className="flex items-center gap-2 mb-4">
+                <CheckCircle2 className="h-6 w-6 text-emerald-400" />
+                <h3 className="heading-display text-xl text-white">Your results</h3>
+              </div>
+
+              <div className="space-y-3">
+                {quizResult?.map((r, i) => {
+                  const maxScore = quizResult[0].score;
+                  const pct = Math.round((r.score / maxScore) * 100);
+                  const style = COMBAT_STYLES.find((s) => s.name === r.name);
+                  return (
+                    <div key={r.name} className="rounded-lg border border-ink-700 bg-ink-900 p-4">
+                      <div className="flex items-center justify-between mb-2">
+                        <div className="flex items-center gap-2">
+                          {i === 0 && <span className="chip-blood">Best match</span>}
+                          <span className={`font-bold ${i === 0 ? "text-white text-lg" : "text-ink-200"}`}>
+                            {r.name}
+                          </span>
+                        </div>
+                        <span className="text-sm font-bold text-ink-400">{pct}%</span>
+                      </div>
+                      <div className="h-2 rounded-full bg-ink-700 overflow-hidden">
+                        <div
+                          className={`h-full rounded-full transition-all duration-700 ${i === 0 ? "bg-blood-500" : "bg-ink-500"}`}
+                          style={{ width: `${pct}%` }}
+                        />
+                      </div>
+                      {style && (
+                        <p className="mt-2 text-xs text-ink-400">{style.blurb}</p>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+
+              <div className="mt-5 flex gap-3">
+                <button onClick={resetQuiz} className="btn-secondary">
+                  <RotateCcw className="h-4 w-4" /> Retake quiz
+                </button>
+                <a href="#gyms" className="btn-primary">
+                  Find gyms <ArrowRight className="h-4 w-4" />
+                </a>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Static style cards below quiz */}
+        <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {COMBAT_STYLES.map((s) => (
             <div key={s.slug} className="card card-hover overflow-hidden">
               <div className={`h-2 bg-gradient-to-r ${s.color}`} />
@@ -94,9 +303,7 @@ export default function StartTrainingPage() {
                 <p className="mt-2 text-sm text-ink-300">{s.blurb}</p>
                 <div className="mt-4 flex flex-wrap gap-1.5">
                   {s.pros.map((p) => (
-                    <span key={p} className="chip">
-                      {p}
-                    </span>
+                    <span key={p} className="chip">{p}</span>
                   ))}
                 </div>
               </div>
@@ -105,8 +312,8 @@ export default function StartTrainingPage() {
         </div>
       </section>
 
-      {/* Gym list + map area */}
-      <section className="border-y border-ink-800/80 bg-ink-900/40">
+      {/* Gym list */}
+      <section id="gyms" className="border-y border-ink-800/80 bg-ink-900/40">
         <div className="container-fi py-16">
           <div className="mb-6 flex flex-wrap items-end justify-between gap-3">
             <div>
@@ -114,20 +321,15 @@ export default function StartTrainingPage() {
               <h2 className="heading-display text-3xl text-white">Beginner-friendly gyms</h2>
             </div>
             <div className="flex flex-wrap gap-2">
-              {[
-                "All disciplines",
-                "Boxing",
-                "Muay Thai",
-                "BJJ",
-                "MMA",
-                "Beginner friendly",
-                "Kids classes",
-                "Women's classes",
-              ].map((f) => (
+              {DISCIPLINE_FILTERS.map((f) => (
                 <button
                   key={f}
-                  className={`chip cursor-pointer ${
-                    f === "All disciplines" ? "border-blood-500/50 text-white" : ""
+                  type="button"
+                  onClick={() => setActiveDiscipline(f)}
+                  className={`chip cursor-pointer transition ${
+                    f === activeDiscipline
+                      ? "border-blood-500/50 bg-blood-500/10 text-white"
+                      : "hover:border-ink-500 hover:text-white"
                   }`}
                 >
                   {f}
@@ -136,58 +338,63 @@ export default function StartTrainingPage() {
             </div>
           </div>
 
-          <div className="grid gap-6 lg:grid-cols-[1.2fr_1fr]">
-            <div className="grid gap-6 sm:grid-cols-2">
-              {MOCK_GYMS.map((g) => (
-                <GymCard key={g.id} gym={g} />
-              ))}
+          {filteredGyms.length === 0 ? (
+            <div className="card p-10 text-center text-ink-300">
+              No gyms found. Try a different filter or location.
             </div>
+          ) : (
+            <div className="grid gap-6 lg:grid-cols-[1.2fr_1fr]">
+              <div className="grid gap-6 sm:grid-cols-2">
+                {filteredGyms.map((g) => (
+                  <GymCard key={g.id} gym={g} />
+                ))}
+              </div>
 
-            {/* Map placeholder */}
-            <div className="card relative h-[480px] overflow-hidden lg:h-auto lg:min-h-[560px]">
-              <div
-                className="absolute inset-0"
-                style={{
-                  backgroundImage:
-                    "radial-gradient(rgba(255,255,255,0.04) 1px, transparent 1px), radial-gradient(rgba(225,29,42,0.05) 1px, transparent 1px)",
-                  backgroundSize: "32px 32px, 64px 64px",
-                  backgroundPosition: "0 0, 16px 16px",
-                }}
-              />
-              <div className="absolute inset-0 bg-gradient-to-br from-ink-900 via-ink-950/40 to-ink-900" />
-
-              {/* Pins */}
-              {[
-                { top: "22%", left: "30%", label: "Ironworks" },
-                { top: "44%", left: "62%", label: "Renzo" },
-                { top: "68%", left: "38%", label: "Atos" },
-                { top: "30%", left: "78%", label: "Sitsongpeenong" },
-              ].map((p) => (
+              {/* Map placeholder */}
+              <div className="card relative h-[480px] overflow-hidden lg:h-auto lg:min-h-[560px]">
                 <div
-                  key={p.label}
-                  className="absolute -translate-x-1/2 -translate-y-1/2"
-                  style={{ top: p.top, left: p.left }}
-                >
-                  <div className="relative">
-                    <div className="h-4 w-4 rounded-full bg-blood-500 ring-4 ring-blood-500/30 animate-pulseRing" />
-                    <div className="absolute left-1/2 top-5 -translate-x-1/2 whitespace-nowrap rounded-md border border-ink-700 bg-ink-900/90 px-2 py-1 text-[10px] font-semibold text-white shadow">
-                      {p.label}
+                  className="absolute inset-0"
+                  style={{
+                    backgroundImage:
+                      "radial-gradient(rgba(255,255,255,0.04) 1px, transparent 1px), radial-gradient(rgba(225,29,42,0.05) 1px, transparent 1px)",
+                    backgroundSize: "32px 32px, 64px 64px",
+                    backgroundPosition: "0 0, 16px 16px",
+                  }}
+                />
+                <div className="absolute inset-0 bg-gradient-to-br from-ink-900 via-ink-950/40 to-ink-900" />
+
+                {[
+                  { top: "22%", left: "30%", label: "Ironworks" },
+                  { top: "44%", left: "62%", label: "Renzo" },
+                  { top: "68%", left: "38%", label: "Atos" },
+                  { top: "30%", left: "78%", label: "Sitsongpeenong" },
+                ].map((p) => (
+                  <div
+                    key={p.label}
+                    className="absolute -translate-x-1/2 -translate-y-1/2"
+                    style={{ top: p.top, left: p.left }}
+                  >
+                    <div className="relative">
+                      <div className="h-4 w-4 rounded-full bg-blood-500 ring-4 ring-blood-500/30 animate-pulseRing" />
+                      <div className="absolute left-1/2 top-5 -translate-x-1/2 whitespace-nowrap rounded-md border border-ink-700 bg-ink-900/90 px-2 py-1 text-[10px] font-semibold text-white shadow">
+                        {p.label}
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                ))}
 
-              <div className="absolute right-3 top-3 flex gap-2">
-                <button className="btn-secondary h-9 px-2.5">
-                  <Filter className="h-3.5 w-3.5" />
-                </button>
-              </div>
-              <div className="absolute bottom-3 left-3 right-3 rounded-md border border-ink-700 bg-ink-900/90 px-3 py-2 text-xs text-ink-300">
-                Live map preview · Wire to Google Maps with{" "}
-                <code className="text-blood-500">NEXT_PUBLIC_GOOGLE_MAPS_API_KEY</code>
+                <div className="absolute right-3 top-3 flex gap-2">
+                  <button className="btn-secondary h-9 px-2.5">
+                    <Filter className="h-3.5 w-3.5" />
+                  </button>
+                </div>
+                <div className="absolute bottom-3 left-3 right-3 rounded-md border border-ink-700 bg-ink-900/90 px-3 py-2 text-xs text-ink-300">
+                  Live map preview · Wire to Google Maps with{" "}
+                  <code className="text-blood-500">NEXT_PUBLIC_GOOGLE_MAPS_API_KEY</code>
+                </div>
               </div>
             </div>
-          </div>
+          )}
         </div>
       </section>
 
@@ -196,7 +403,7 @@ export default function StartTrainingPage() {
         <div className="eyebrow mb-3">Private trainers</div>
         <h2 className="heading-display text-3xl text-white">Want 1-on-1 coaching?</h2>
         <p className="mt-2 max-w-2xl text-ink-300">
-          Browse vetted trainers — boxing mitt work, strength & conditioning, MMA prep, and more.
+          Browse vetted trainers — boxing mitt work, strength &amp; conditioning, MMA prep, and more.
           In-person or online.
         </p>
 
@@ -252,7 +459,7 @@ export default function StartTrainingPage() {
                 </span>
                 <span className="font-bold text-white">{t.price}</span>
               </div>
-              <Link href="#" className="btn-secondary mt-4 w-full">
+              <Link href="/contact" className="btn-secondary mt-4 w-full">
                 View profile
               </Link>
             </div>

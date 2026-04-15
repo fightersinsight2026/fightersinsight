@@ -1,6 +1,9 @@
+"use client";
+
+import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { useParams } from "next/navigation";
 import { MOCK_GYMS } from "@/lib/mock-data";
 import { GymCard } from "@/components/cards/gym-card";
 import {
@@ -11,24 +14,12 @@ import {
   Phone,
   Globe,
   Bookmark,
+  BookmarkCheck,
   Share2,
   Calendar,
+  Check,
+  ExternalLink,
 } from "lucide-react";
-import type { Metadata } from "next";
-
-export function generateStaticParams() {
-  return MOCK_GYMS.map((g) => ({ slug: g.slug }));
-}
-
-export function generateMetadata({ params }: { params: { slug: string } }): Metadata {
-  const gym = MOCK_GYMS.find((g) => g.slug === params.slug);
-  if (!gym) return { title: "Gym not found" };
-  return {
-    title: `${gym.name} — ${gym.city}, ${gym.state}`,
-    description: gym.blurb,
-    openGraph: { images: [gym.image] },
-  };
-}
 
 const SCHEDULE = [
   { day: "Mon", classes: ["Boxing Fundamentals 6am", "Sparring 6pm", "Open mat 8pm"] },
@@ -40,10 +31,78 @@ const SCHEDULE = [
   { day: "Sun", classes: ["Open mat 11am"] },
 ];
 
-export default function GymDetailPage({ params }: { params: { slug: string } }) {
+export default function GymDetailPage() {
+  const params = useParams<{ slug: string }>();
   const gym = MOCK_GYMS.find((g) => g.slug === params.slug);
-  if (!gym) notFound();
+
+  const [saved, setSaved] = useState(false);
+  const [shareLabel, setShareLabel] = useState("Share");
+  const [reviewText, setReviewText] = useState("");
+  const [reviews, setReviews] = useState([
+    {
+      id: "rv1",
+      user: "newjabber",
+      flair: "Beginner",
+      rating: 5,
+      body: "Walked in nervous as hell on day one. Coach took 10 minutes to introduce me to everyone. Best decision I've made.",
+    },
+    {
+      id: "rv2",
+      user: "tapeologist",
+      flair: "Coach",
+      rating: 5,
+      body: "Real coaches who know what they're doing. Sparring is controlled. Recommended.",
+    },
+  ]);
+  const [showReviewForm, setShowReviewForm] = useState(false);
+
+  if (!gym) {
+    return (
+      <div className="container-fi py-20 text-center">
+        <h1 className="heading-display text-3xl text-white">Gym not found</h1>
+        <Link href="/start-training" className="btn-primary mt-6 inline-flex">Back to gyms</Link>
+      </div>
+    );
+  }
+
   const others = MOCK_GYMS.filter((g) => g.id !== gym.id).slice(0, 3);
+
+  async function handleShare() {
+    const url = window.location.href;
+    if (navigator.share) {
+      try { await navigator.share({ title: `${gym!.name} — ${gym!.city}, ${gym!.state}`, url }); } catch { /* cancelled */ }
+    } else {
+      await navigator.clipboard.writeText(url);
+      setShareLabel("Copied!");
+      setTimeout(() => setShareLabel("Share"), 2000);
+    }
+  }
+
+  function handleGetDirections() {
+    const query = encodeURIComponent(`${gym!.name} ${gym!.city} ${gym!.state}`);
+    window.open(`https://www.google.com/maps/search/?api=1&query=${query}`, "_blank");
+  }
+
+  function handleContact() {
+    window.location.href = `mailto:info@${gym!.slug}.com?subject=Inquiry about ${gym!.name}`;
+  }
+
+  function handlePostReview(e: React.FormEvent) {
+    e.preventDefault();
+    if (!reviewText.trim()) return;
+    setReviews((prev) => [
+      ...prev,
+      {
+        id: `rv${Date.now()}`,
+        user: "you",
+        flair: "Member",
+        rating: 5,
+        body: reviewText.trim(),
+      },
+    ]);
+    setReviewText("");
+    setShowReviewForm(false);
+  }
 
   return (
     <>
@@ -99,9 +158,7 @@ export default function GymDetailPage({ params }: { params: { slug: string } }) 
               <div className="eyebrow mb-2">Disciplines offered</div>
               <div className="flex flex-wrap gap-2">
                 {gym.disciplines.map((d) => (
-                  <span key={d} className="chip-blood">
-                    {d}
-                  </span>
+                  <span key={d} className="chip-blood">{d}</span>
                 ))}
               </div>
             </div>
@@ -119,9 +176,7 @@ export default function GymDetailPage({ params }: { params: { slug: string } }) 
                   </div>
                   <div className="flex-1 space-y-1">
                     {d.classes.map((c) => (
-                      <div key={c} className="text-sm text-ink-200">
-                        {c}
-                      </div>
+                      <div key={c} className="text-sm text-ink-200">{c}</div>
                     ))}
                   </div>
                 </div>
@@ -130,23 +185,10 @@ export default function GymDetailPage({ params }: { params: { slug: string } }) 
           </section>
 
           <section>
-            <h2 className="heading-display text-2xl text-white">Reviews</h2>
+            <h2 className="heading-display text-2xl text-white">Reviews ({reviews.length})</h2>
             <div className="mt-4 space-y-3">
-              {[
-                {
-                  user: "newjabber",
-                  flair: "Beginner",
-                  rating: 5,
-                  body: "Walked in nervous as hell on day one. Coach took 10 minutes to introduce me to everyone. Best decision I've made.",
-                },
-                {
-                  user: "tapeologist",
-                  flair: "Coach",
-                  rating: 5,
-                  body: "Real coaches who know what they're doing. Sparring is controlled. Recommended.",
-                },
-              ].map((r) => (
-                <div key={r.user} className="card p-4">
+              {reviews.map((r) => (
+                <div key={r.id} className="card p-4">
                   <div className="flex items-center justify-between text-xs">
                     <div className="flex items-center gap-2">
                       <span className="font-bold text-white">{r.user}</span>
@@ -162,17 +204,43 @@ export default function GymDetailPage({ params }: { params: { slug: string } }) 
                 </div>
               ))}
             </div>
-            <button className="btn-secondary mt-4">Write a review</button>
+
+            {showReviewForm ? (
+              <form onSubmit={handlePostReview} className="card mt-4 p-4">
+                <textarea
+                  rows={3}
+                  value={reviewText}
+                  onChange={(e) => setReviewText(e.target.value)}
+                  placeholder="Share your experience at this gym…"
+                  className="input resize-none"
+                />
+                <div className="mt-3 flex items-center gap-2 justify-end">
+                  <button type="button" onClick={() => setShowReviewForm(false)} className="btn-ghost text-sm">
+                    Cancel
+                  </button>
+                  <button type="submit" disabled={!reviewText.trim()} className="btn-primary text-sm disabled:opacity-50">
+                    Post review
+                  </button>
+                </div>
+              </form>
+            ) : (
+              <button onClick={() => setShowReviewForm(true)} className="btn-secondary mt-4">
+                Write a review
+              </button>
+            )}
           </section>
         </div>
 
         {/* Sidebar */}
         <aside className="space-y-4 lg:sticky lg:top-24 self-start">
           <div className="card p-5">
-            <button className="btn-primary w-full">
+            <button onClick={handleGetDirections} className="btn-primary w-full">
               <MapPin className="h-4 w-4" /> Get directions
+              <ExternalLink className="h-3 w-3 ml-auto opacity-50" />
             </button>
-            <button className="btn-secondary mt-2 w-full">Contact gym</button>
+            <button onClick={handleContact} className="btn-secondary mt-2 w-full">
+              Contact gym
+            </button>
 
             <dl className="mt-5 space-y-3 text-sm">
               <div className="flex items-start gap-3">
@@ -210,15 +278,21 @@ export default function GymDetailPage({ params }: { params: { slug: string } }) 
             </ul>
           </div>
 
-          <div className="card p-5">
-            <div className="flex items-center gap-2">
-              <Bookmark className="h-4 w-4" />
-              <button className="text-sm font-semibold text-white">Save gym</button>
-            </div>
-            <div className="mt-2 flex items-center gap-2">
-              <Share2 className="h-4 w-4" />
-              <button className="text-sm font-semibold text-white">Share</button>
-            </div>
+          <div className="card p-5 space-y-3">
+            <button
+              onClick={() => setSaved((s) => !s)}
+              className={`flex items-center gap-2 text-sm font-semibold transition ${saved ? "text-blood-500" : "text-white hover:text-blood-500"}`}
+            >
+              {saved ? <BookmarkCheck className="h-4 w-4" /> : <Bookmark className="h-4 w-4" />}
+              {saved ? "Gym saved" : "Save gym"}
+            </button>
+            <button
+              onClick={handleShare}
+              className="flex items-center gap-2 text-sm font-semibold text-white hover:text-blood-500 transition"
+            >
+              {shareLabel === "Copied!" ? <Check className="h-4 w-4" /> : <Share2 className="h-4 w-4" />}
+              {shareLabel}
+            </button>
           </div>
         </aside>
       </div>
