@@ -223,33 +223,33 @@ export default function LiveEventPage() {
                   <button
                     type="button"
                     onClick={() => setSelectedFight(selectedFight === i ? null : i)}
-                    className={`card flex items-stretch overflow-hidden w-full text-left transition hover:border-ink-500 ${selectedFight === i ? "border-blood-500/50 ring-1 ring-blood-500/30" : ""}`}
+                    className={`card overflow-hidden w-full text-left transition hover:border-ink-500 ${selectedFight === i ? "border-blood-500/50 ring-1 ring-blood-500/30" : ""}`}
                   >
-                    <div className="flex w-20 shrink-0 flex-col items-center justify-center border-r border-ink-700/70 bg-ink-900/60 p-2 text-center">
-                      {bout.main ? (
-                        <span className="chip-blood">Main</span>
-                      ) : bout.coMain ? (
-                        <span className="chip-gold">Co-Main</span>
+                    {/* Top bar — bout label + weight class */}
+                    <div className="flex items-center justify-between border-b border-ink-700/70 bg-ink-900/60 px-4 py-2">
+                      <div className="flex items-center gap-2">
+                        {bout.main ? (
+                          <span className="chip-blood">Main Event</span>
+                        ) : bout.coMain ? (
+                          <span className="chip-gold">Co-Main</span>
+                        ) : (
+                          <span className="text-xs font-bold text-ink-300">Bout {i + 1}</span>
+                        )}
+                        <span className="text-[11px] uppercase tracking-wider text-ink-400">{bout.weight}</span>
+                      </div>
+                      {selectedFight === i ? (
+                        <ChevronUp className="h-4 w-4 text-ink-400" />
                       ) : (
-                        <span className="text-xs font-bold text-ink-300">Bout {i + 1}</span>
+                        <ChevronDown className="h-4 w-4 text-ink-400" />
                       )}
-                      <span className="mt-1 text-[10px] uppercase tracking-wider text-ink-400">
-                        {bout.weight}
-                      </span>
                     </div>
-                    <div className="grid flex-1 grid-cols-[1fr_auto_1fr] items-center gap-3 p-4">
+                    {/* Fighters row */}
+                    <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-3 px-4 py-3">
                       <div className="text-right">
                         <div className="font-bold text-white">{bout.a.name}</div>
                         <div className="text-xs text-ink-400">{bout.a.record}</div>
                       </div>
-                      <div className="flex flex-col items-center gap-1">
-                        <span className="heading-display text-sm text-blood-500">VS</span>
-                        {selectedFight === i ? (
-                          <ChevronUp className="h-3 w-3 text-ink-400" />
-                        ) : (
-                          <ChevronDown className="h-3 w-3 text-ink-400" />
-                        )}
-                      </div>
+                      <span className="heading-display text-sm text-blood-500">VS</span>
                       <div className="text-left">
                         <div className="font-bold text-white">{bout.b.name}</div>
                         <div className="text-xs text-ink-400">{bout.b.record}</div>
