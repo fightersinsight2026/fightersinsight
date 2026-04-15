@@ -1,6 +1,6 @@
 import { EventCard } from "@/components/cards/event-card";
 import { MOCK_EVENTS } from "@/lib/mock-data";
-import { Radio } from "lucide-react";
+import { Radio, ExternalLink } from "lucide-react";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -9,9 +9,18 @@ export const metadata: Metadata = {
     "Round-by-round live updates, fan reactions, polls, and community scorecards for tonight's biggest fights.",
 };
 
+const WATCH_LINKS = [
+  { name: "ESPN+", href: "https://www.espn.com/espnplus/", tag: "UFC" },
+  { name: "DAZN", href: "https://www.dazn.com/", tag: "Boxing / MMA" },
+  { name: "UFC Fight Pass", href: "https://www.ufc.com/fight-pass", tag: "UFC Prelims" },
+  { name: "Showtime Sports", href: "https://www.sho.com/sports", tag: "Boxing" },
+  { name: "ONE Championship", href: "https://www.onefc.com/", tag: "ONE" },
+];
+
 export default function LivePage() {
   const live = MOCK_EVENTS.filter((e) => e.status === "LIVE");
   const upcoming = MOCK_EVENTS.filter((e) => e.status === "UPCOMING");
+  const ended = MOCK_EVENTS.filter((e) => e.status === "ENDED");
 
   return (
     <>
@@ -53,12 +62,46 @@ export default function LivePage() {
         </div>
       </section>
 
-      <section className="container-fi pb-20">
-        <h2 className="heading-display text-2xl text-white mb-6">Past events</h2>
-        <div className="card p-10 text-center text-ink-300">
-          Past event archive coming soon — recaps, results, and full live feeds will be browsable
-          here.
+      {/* Where to watch */}
+      <section className="border-y border-ink-800/80 bg-ink-900/40">
+        <div className="container-fi py-12">
+          <h2 className="heading-display text-2xl text-white mb-2">Where to watch fights</h2>
+          <p className="text-sm text-ink-300 mb-6">Official broadcast and streaming platforms for combat sports.</p>
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {WATCH_LINKS.map((w) => (
+              <a
+                key={w.name}
+                href={w.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="card card-hover flex items-center justify-between p-4"
+              >
+                <div>
+                  <div className="font-semibold text-white">{w.name}</div>
+                  <div className="text-xs text-ink-400">{w.tag}</div>
+                </div>
+                <ExternalLink className="h-4 w-4 text-ink-400" />
+              </a>
+            ))}
+          </div>
         </div>
+      </section>
+
+      {/* Past events */}
+      <section className="container-fi py-12 pb-20">
+        <h2 className="heading-display text-2xl text-white mb-6">Past events</h2>
+        {ended.length > 0 ? (
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            {ended.map((e) => (
+              <EventCard key={e.id} event={e} />
+            ))}
+          </div>
+        ) : (
+          <div className="card p-10 text-center text-ink-300">
+            Past event archive coming soon — recaps, results, and full live feeds will be browsable
+            here.
+          </div>
+        )}
       </section>
     </>
   );
