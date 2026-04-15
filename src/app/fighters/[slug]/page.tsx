@@ -1,29 +1,68 @@
+"use client";
+
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { useParams } from "next/navigation";
 import { MOCK_FIGHTERS } from "@/lib/mock-data";
-import { ArrowLeft, MapPin, Trophy, Bookmark, Share2 } from "lucide-react";
+import { ArrowLeft, MapPin, Trophy, Heart, Share2, Check } from "lucide-react";
 import { FighterCard } from "@/components/cards/fighter-card";
-import type { Metadata } from "next";
 
-export function generateStaticParams() {
-  return MOCK_FIGHTERS.map((f) => ({ slug: f.slug }));
-}
-
-export function generateMetadata({ params }: { params: { slug: string } }): Metadata {
+export default function FighterPage() {
+  const params = useParams<{ slug: string }>();
   const f = MOCK_FIGHTERS.find((x) => x.slug === params.slug);
-  if (!f) return { title: "Fighter not found" };
-  return {
-    title: `${f.name}${f.nickname ? ` "${f.nickname}"` : ""} — Fighter Profile`,
-    description: f.bio,
-    openGraph: { images: [f.image] },
-  };
-}
 
-export default function FighterPage({ params }: { params: { slug: string } }) {
-  const f = MOCK_FIGHTERS.find((x) => x.slug === params.slug);
-  if (!f) notFound();
+  const [following, setFollowing] = useState(false);
+  const [shareLabel, setShareLabel] = useState("Share");
+
+  // Load follow state from localStorage
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem("fi-followed-fighters");
+      if (stored) {
+        const slugs: string[] = JSON.parse(stored);
+        if (params.slug && slugs.includes(params.slug)) setFollowing(true);
+      }
+    } catch { /* ignore */ }
+  }, [params.slug]);
+
+  if (!f) {
+    return (
+      <div className="container-fi py-20 text-center">
+        <h1 className="heading-display text-3xl text-white">Fighter not found</h1>
+        <Link href="/fighters" className="btn-primary mt-6 inline-flex">Back to fighters</Link>
+      </div>
+    );
+  }
+
   const others = MOCK_FIGHTERS.filter((x) => x.id !== f.id).slice(0, 4);
+
+  function handleFollow() {
+    try {
+      const stored = localStorage.getItem("fi-followed-fighters");
+      let slugs: string[] = stored ? JSON.parse(stored) : [];
+
+      if (following) {
+        slugs = slugs.filter((s) => s !== f!.slug);
+      } else {
+        if (!slugs.includes(f!.slug)) slugs.push(f!.slug);
+      }
+
+      localStorage.setItem("fi-followed-fighters", JSON.stringify(slugs));
+      setFollowing(!following);
+    } catch { /* ignore */ }
+  }
+
+  async function handleShare() {
+    const url = window.location.href;
+    if (navigator.share) {
+      try { await navigator.share({ title: `${f!.name} — Fighter Profile`, url }); } catch { /* cancelled */ }
+    } else {
+      await navigator.clipboard.writeText(url);
+      setShareLabel("Copied!");
+      setTimeout(() => setShareLabel("Share"), 2000);
+    }
+  }
 
   return (
     <>
@@ -85,11 +124,16 @@ export default function FighterPage({ params }: { params: { slug: string } }) {
             </div>
 
             <div className="mt-6 flex gap-2">
-              <button className="btn-secondary">
-                <Bookmark className="h-4 w-4" /> Follow fighter
+              <button
+                onClick={handleFollow}
+                className={following ? "btn-primary" : "btn-secondary"}
+              >
+                <Heart className={`h-4 w-4 ${following ? "fill-white" : ""}`} />
+                {following ? "Following" : "Follow fighter"}
               </button>
-              <button className="btn-ghost">
-                <Share2 className="h-4 w-4" /> Share
+              <button onClick={handleShare} className="btn-ghost">
+                {shareLabel === "Copied!" ? <Check className="h-4 w-4" /> : <Share2 className="h-4 w-4" />}
+                {shareLabel}
               </button>
             </div>
           </div>

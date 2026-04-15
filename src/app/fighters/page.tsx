@@ -1,13 +1,9 @@
+"use client";
+
+import { useState, useMemo, useEffect } from "react";
 import { FighterCard } from "@/components/cards/fighter-card";
 import { MOCK_FIGHTERS } from "@/lib/mock-data";
-import { Search } from "lucide-react";
-import type { Metadata } from "next";
-
-export const metadata: Metadata = {
-  title: "Fighters — The fighter database",
-  description:
-    "Browse fighter profiles, records, styles, and rankings from across UFC, boxing, ONE, Bellator, and PFL.",
-};
+import { Search, Heart } from "lucide-react";
 
 const WEIGHT_CLASSES = [
   "All",
@@ -24,6 +20,50 @@ const WEIGHT_CLASSES = [
 const PROMOTIONS = ["All", "UFC", "Boxing", "ONE", "Bellator", "PFL"];
 
 export default function FightersPage() {
+  const [query, setQuery] = useState("");
+  const [activePromotion, setActivePromotion] = useState("All");
+  const [activeWeight, setActiveWeight] = useState("All");
+  const [followedSlugs, setFollowedSlugs] = useState<string[]>([]);
+
+  // Load followed fighters from localStorage
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem("fi-followed-fighters");
+      if (stored) setFollowedSlugs(JSON.parse(stored));
+    } catch { /* ignore */ }
+  }, []);
+
+  const followedFighters = useMemo(
+    () => MOCK_FIGHTERS.filter((f) => followedSlugs.includes(f.slug)),
+    [followedSlugs]
+  );
+
+  const filtered = useMemo(() => {
+    let fighters = MOCK_FIGHTERS;
+
+    if (activePromotion !== "All") {
+      fighters = fighters.filter((f) => f.promotion === activePromotion);
+    }
+
+    if (activeWeight !== "All") {
+      fighters = fighters.filter((f) => f.weightClass === activeWeight);
+    }
+
+    if (query.trim()) {
+      const q = query.toLowerCase();
+      fighters = fighters.filter(
+        (f) =>
+          f.name.toLowerCase().includes(q) ||
+          (f.nickname && f.nickname.toLowerCase().includes(q)) ||
+          f.country.toLowerCase().includes(q) ||
+          f.weightClass.toLowerCase().includes(q) ||
+          f.promotion.toLowerCase().includes(q)
+      );
+    }
+
+    return fighters;
+  }, [query, activePromotion, activeWeight]);
+
   return (
     <>
       <section className="border-b border-ink-800/80">
@@ -42,6 +82,8 @@ export default function FightersPage() {
               <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-400" />
               <input
                 type="search"
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
                 placeholder="Search fighters by name, nickname, or country…"
                 className="input pl-10"
               />
@@ -50,8 +92,12 @@ export default function FightersPage() {
               {PROMOTIONS.map((p) => (
                 <button
                   key={p}
-                  className={`chip cursor-pointer ${
-                    p === "All" ? "border-blood-500/50 text-white" : ""
+                  type="button"
+                  onClick={() => setActivePromotion(p)}
+                  className={`chip cursor-pointer transition ${
+                    p === activePromotion
+                      ? "border-blood-500/50 bg-blood-500/10 text-white"
+                      : "hover:border-ink-500 hover:text-white"
                   }`}
                 >
                   {p}
@@ -64,8 +110,12 @@ export default function FightersPage() {
             {WEIGHT_CLASSES.map((w) => (
               <button
                 key={w}
-                className={`chip cursor-pointer ${
-                  w === "All" ? "border-blood-500/50 text-white" : ""
+                type="button"
+                onClick={() => setActiveWeight(w)}
+                className={`chip cursor-pointer transition ${
+                  w === activeWeight
+                    ? "border-blood-500/50 bg-blood-500/10 text-white"
+                    : "hover:border-ink-500 hover:text-white"
                 }`}
               >
                 {w}
@@ -75,12 +125,37 @@ export default function FightersPage() {
         </div>
       </section>
 
+      {/* Following section */}
+      {followedFighters.length > 0 && (
+        <section className="border-b border-ink-800/80 bg-ink-900/40">
+          <div className="container-fi py-10">
+            <div className="flex items-center gap-2 mb-5">
+              <Heart className="h-5 w-5 text-blood-500 fill-blood-500" />
+              <h2 className="heading-display text-xl text-white">Following</h2>
+              <span className="text-sm text-ink-400">({followedFighters.length})</span>
+            </div>
+            <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+              {followedFighters.map((f) => (
+                <FighterCard key={f.id} fighter={f} />
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* All fighters */}
       <section className="container-fi py-12">
-        <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-          {MOCK_FIGHTERS.map((f) => (
-            <FighterCard key={f.id} fighter={f} />
-          ))}
-        </div>
+        {filtered.length === 0 ? (
+          <div className="card p-10 text-center text-ink-300">
+            No fighters found. Try a different search or filter.
+          </div>
+        ) : (
+          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            {filtered.map((f) => (
+              <FighterCard key={f.id} fighter={f} />
+            ))}
+          </div>
+        )}
       </section>
     </>
   );
