@@ -169,23 +169,23 @@ export default function StartTrainingPage() {
             </p>
 
             {/* Search */}
-            <div className="mt-8 card flex flex-col gap-3 p-3 sm:flex-row sm:items-center">
+            <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center">
               <div className="relative flex-1">
-                <MapPin className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-blood-500" />
+                <MapPin className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-blood-500" />
                 <input
                   type="text"
                   value={locationQuery}
                   onChange={(e) => setLocationQuery(e.target.value)}
                   placeholder="Enter your city or zip code"
-                  className="input pl-10"
+                  className="w-full rounded-lg border border-ink-600 bg-ink-900 pl-12 pr-4 py-3.5 text-base text-ink-100 placeholder:text-ink-400 focus:outline-none focus:ring-2 focus:ring-blood-500/50 focus:border-blood-500/50"
                 />
               </div>
-              <button
-                onClick={() => {/* search already filters live */}}
-                className="btn-primary shrink-0"
+              <a
+                href="#gyms"
+                className="btn-primary shrink-0 py-3.5 px-6 text-base"
               >
-                <Search className="h-4 w-4" /> Find gyms near me
-              </button>
+                <Search className="h-5 w-5" /> Find gyms near me
+              </a>
             </div>
             <button
               onClick={() => setLocationQuery("")}
