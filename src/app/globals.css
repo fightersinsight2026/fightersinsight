@@ -15,15 +15,12 @@ html {
 body {
   @apply bg-ink-950 text-ink-100 antialiased;
   font-family: var(--font-sans);
-  background-image:
-    radial-gradient(ellipse 60% 40% at 50% -10%, rgba(29, 78, 216, 0.18), transparent 60%),
-    radial-gradient(ellipse 40% 30% at 90% 10%, rgba(245, 196, 81, 0.06), transparent 60%);
-  background-attachment: fixed;
+  background-image: none;
 }
 
 /* selection */
 ::selection {
-  background: rgba(29, 78, 216, 0.35);
+  background: rgba(255, 255, 255, 0.2);
   color: white;
 }
 
@@ -33,14 +30,14 @@ body {
   height: 10px;
 }
 ::-webkit-scrollbar-track {
-  background: #0c0d10;
+  background: #0a0a0a;
 }
 ::-webkit-scrollbar-thumb {
-  background: #2a2f39;
+  background: #2a2a2a;
   border-radius: 8px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #3a4150;
+  background: #3d3d3d;
 }
 
 @layer components {
@@ -49,7 +46,7 @@ body {
   }
 
   .eyebrow {
-    @apply text-[11px] font-semibold uppercase tracking-[0.18em] text-ink-300;
+    @apply text-[11px] font-semibold uppercase tracking-[0.18em] text-ink-400;
   }
 
   .heading-display {
@@ -57,23 +54,23 @@ body {
   }
 
   .card {
-    @apply rounded-xl border border-ink-700/70 bg-ink-850/70 backdrop-blur-sm shadow-cardglow;
+    @apply rounded-xl border border-ink-700 bg-ink-900 shadow-cardglow;
   }
 
   .card-hover {
-    @apply transition hover:border-ink-600 hover:bg-ink-800/80 hover:-translate-y-0.5;
+    @apply transition hover:border-ink-500 hover:bg-ink-800 hover:-translate-y-0.5;
   }
 
   .chip {
-    @apply inline-flex items-center gap-1 rounded-full border border-ink-700 bg-ink-850 px-2.5 py-0.5 text-[11px] font-semibold uppercase tracking-wider text-ink-200;
+    @apply inline-flex items-center gap-1 rounded-full border border-ink-600 bg-ink-800 px-2.5 py-0.5 text-[11px] font-semibold uppercase tracking-wider text-ink-200;
   }
 
   .chip-blood {
-    @apply chip border-blood-700/60 bg-blood-700/15 text-blood-500;
+    @apply chip border-white/30 bg-white/10 text-white;
   }
 
   .chip-gold {
-    @apply chip border-gold-500/40 bg-gold-500/10 text-gold-400;
+    @apply chip border-ink-400 bg-ink-700 text-white;
   }
 
   .btn {
@@ -81,11 +78,11 @@ body {
   }
 
   .btn-primary {
-    @apply btn bg-blood-500 text-white hover:bg-blood-600 focus:ring-blood-500;
+    @apply btn bg-white text-black hover:bg-ink-200 focus:ring-white;
   }
 
   .btn-secondary {
-    @apply btn border border-ink-600 bg-ink-800 text-ink-100 hover:bg-ink-700 hover:border-ink-500 focus:ring-ink-500;
+    @apply btn border border-ink-500 bg-ink-800 text-ink-100 hover:bg-ink-700 hover:border-ink-400 focus:ring-ink-500;
   }
 
   .btn-ghost {
@@ -93,11 +90,11 @@ body {
   }
 
   .btn-gold {
-    @apply btn bg-gold-500 text-ink-950 hover:bg-gold-400 focus:ring-gold-500;
+    @apply btn bg-ink-200 text-ink-950 hover:bg-white focus:ring-ink-200;
   }
 
   .nav-link {
-    @apply text-sm font-semibold text-ink-200 transition hover:text-white;
+    @apply text-sm font-semibold text-ink-300 transition hover:text-white;
   }
 
   .nav-link-active {
@@ -105,11 +102,11 @@ body {
   }
 
   .live-dot {
-    @apply relative inline-flex h-2.5 w-2.5 items-center justify-center rounded-full bg-blood-500 animate-pulseRing;
+    @apply relative inline-flex h-2.5 w-2.5 items-center justify-center rounded-full bg-white animate-pulseRing;
   }
 
   .input {
-    @apply w-full rounded-md border border-ink-600 bg-ink-850 px-3 py-2.5 text-sm text-ink-100 placeholder:text-ink-400 focus:outline-none focus:ring-2 focus:ring-blood-500/60 focus:border-blood-500/60;
+    @apply w-full rounded-md border border-ink-600 bg-ink-850 px-3 py-2.5 text-sm text-ink-100 placeholder:text-ink-400 focus:outline-none focus:ring-2 focus:ring-white/40 focus:border-white/40;
   }
 
   .prose-fi h2 {
@@ -122,10 +119,10 @@ body {
     @apply text-ink-200 leading-relaxed mb-4;
   }
   .prose-fi a {
-    @apply text-blood-500 hover:text-blood-600 underline underline-offset-4;
+    @apply text-white hover:text-ink-200 underline underline-offset-4;
   }
   .prose-fi blockquote {
-    @apply border-l-4 border-blood-500 pl-4 italic text-ink-200 my-6;
+    @apply border-l-4 border-white pl-4 italic text-ink-200 my-6;
   }
 }
 

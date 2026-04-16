@@ -41,7 +41,7 @@ export function Logo({ className }: { className?: string }) {
       </svg>
       <span className="leading-none">
         <span className="block text-[15px] font-black tracking-wide text-white sm:text-base">THE FIGHTER&apos;S</span>
-        <span className="block text-[15px] font-black tracking-wide text-blood-500 sm:text-base">INSIGHT</span>
+        <span className="block text-[15px] font-black tracking-wide text-ink-300 sm:text-base">INSIGHT</span>
       </span>
     </Link>
   );
