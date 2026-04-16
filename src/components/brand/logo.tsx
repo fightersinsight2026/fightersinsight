@@ -11,12 +11,39 @@ export function Logo({ className }: { className?: string }) {
       )}
       aria-label="The Fighter's Insight — Home"
     >
-      <span className="relative inline-flex h-8 w-8 items-center justify-center rounded-md bg-blood-500 text-white shadow-bloodglow">
-        <span className="text-base font-black">FI</span>
-        <span className="absolute -inset-px rounded-md ring-1 ring-inset ring-white/10" />
-      </span>
+      {/* Octagon TFI logo */}
+      <svg
+        viewBox="0 0 40 40"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+        className="h-9 w-9 shrink-0"
+        aria-hidden
+      >
+        {/* Black circle background */}
+        <circle cx="20" cy="20" r="20" fill="#0a0a0b" />
+        {/* White octagon outline */}
+        <polygon
+          points="13.2,4.8 26.8,4.8 35.2,13.2 35.2,26.8 26.8,35.2 13.2,35.2 4.8,26.8 4.8,13.2"
+          fill="none"
+          stroke="white"
+          strokeWidth="2.2"
+        />
+        {/* TFI text */}
+        <text
+          x="20"
+          y="24.5"
+          textAnchor="middle"
+          fill="white"
+          fontFamily="system-ui, sans-serif"
+          fontWeight="900"
+          fontSize="14"
+          letterSpacing="0.5"
+        >
+          TFI
+        </text>
+      </svg>
       <span className="text-lg sm:text-xl">
-        <span className="text-white">FIGHTER&apos;S</span>
+        <span className="text-white">THE FIGHTER&apos;S</span>
         <span className="ml-1 text-blood-500">INSIGHT</span>
       </span>
     </Link>
