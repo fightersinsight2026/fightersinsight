@@ -423,7 +423,7 @@ export const MOCK_GYMS: MockGym[] = [
     rating: 4.9,
     priceRange: "$$",
     image:
-      "https://images.unsplash.com/photo-1549576490-b0b4831ef60a?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1495555961986-6d4c1ecb7be3?auto=format&fit=crop&w=1200&q=80",
     blurb: "Old-school boxing with modern coaching. Beginner classes 7 days a week.",
   },
   {
@@ -439,7 +439,7 @@ export const MOCK_GYMS: MockGym[] = [
     rating: 4.8,
     priceRange: "$$$",
     image:
-      "https://images.unsplash.com/photo-1591117207239-788bf8de6c3b?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1564415315949-7a0c4c73aab4?auto=format&fit=crop&w=1200&q=80",
     blurb: "World-class grappling. Daily fundamentals classes for white belts.",
   },
   {
@@ -455,7 +455,7 @@ export const MOCK_GYMS: MockGym[] = [
     rating: 4.9,
     priceRange: "$$",
     image:
-      "https://images.unsplash.com/photo-1517438322307-e67111335449?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?auto=format&fit=crop&w=1200&q=80",
     blurb: "Authentic Thai-style training with real Bangkok-trained coaches.",
   },
   {
@@ -471,7 +471,7 @@ export const MOCK_GYMS: MockGym[] = [
     rating: 4.9,
     priceRange: "$$$",
     image:
-      "https://images.unsplash.com/photo-1604586362320-d0fe66f1f6be?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1555597673-b21d5c935865?auto=format&fit=crop&w=1200&q=80",
     blurb: "Home of multiple-time IBJJF champions. Beginner Fundamentals 6 days/week.",
   },
   {
@@ -487,7 +487,7 @@ export const MOCK_GYMS: MockGym[] = [
     rating: 4.9,
     priceRange: "$$$",
     image:
-      "https://images.unsplash.com/photo-1517438476312-10d79c077509?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1549719386-74dfcbf7dbed?auto=format&fit=crop&w=1200&q=80",
     blurb: "Home gym of dozens of UFC champions. New beginner program launched 2025.",
   },
   {
@@ -503,7 +503,7 @@ export const MOCK_GYMS: MockGym[] = [
     rating: 4.7,
     priceRange: "$$",
     image:
-      "https://images.unsplash.com/photo-1583473848882-f9a5bc7fd2ee?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1517438476312-10d79c077509?auto=format&fit=crop&w=1200&q=80",
     blurb: "Hardcore old-school boxing gym. Expect to be pushed.",
   },
   {
@@ -519,7 +519,7 @@ export const MOCK_GYMS: MockGym[] = [
     rating: 4.8,
     priceRange: "$$",
     image:
-      "https://images.unsplash.com/photo-1571019613914-85f342c6a11e?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1606925207923-c6f6f5a93a3a?auto=format&fit=crop&w=1200&q=80",
     blurb: "Famous training home of Georges St-Pierre. Beginners welcome 7 days a week.",
   },
   {
@@ -535,7 +535,7 @@ export const MOCK_GYMS: MockGym[] = [
     rating: 4.8,
     priceRange: "$$",
     image:
-      "https://images.unsplash.com/photo-1547347298-4074fc3086f0?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1599058917212-d750089bc07e?auto=format&fit=crop&w=1200&q=80",
     blurb: "Authentic Thai-style Muay Thai in the heart of Brooklyn.",
   },
 ];
