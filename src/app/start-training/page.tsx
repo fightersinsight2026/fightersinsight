@@ -4,7 +4,7 @@ import { useState, useMemo } from "react";
 import Link from "next/link";
 import { GymCard } from "@/components/cards/gym-card";
 import { COMBAT_STYLES, MOCK_GYMS } from "@/lib/mock-data";
-import { MapPin, Search, Filter, Compass, Heart, ShieldCheck, Sparkles, ArrowRight, RotateCcw, CheckCircle2 } from "lucide-react";
+import { MapPin, Search, Compass, Heart, ShieldCheck, Sparkles, ArrowRight, RotateCcw, CheckCircle2 } from "lucide-react";
 
 const FIRST_WEEK = [
   {
@@ -351,13 +351,13 @@ export default function StartTrainingPage() {
         </div>
       </section>
 
-      {/* Gym list */}
+      {/* Gym list — compact */}
       <section id="gyms" className="border-y border-ink-800/80 bg-ink-900/40">
-        <div className="container-fi py-16">
-          <div className="mb-6 flex flex-wrap items-end justify-between gap-3">
+        <div className="container-fi py-10">
+          <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
             <div>
-              <div className="eyebrow mb-2">Near you</div>
-              <h2 className="heading-display text-3xl text-white">Beginner-friendly gyms</h2>
+              <div className="eyebrow mb-1">Near you</div>
+              <h2 className="heading-display text-2xl text-white">Beginner-friendly gyms</h2>
             </div>
             <div className="flex flex-wrap gap-2">
               {DISCIPLINE_FILTERS.map((f) => (
@@ -378,61 +378,24 @@ export default function StartTrainingPage() {
           </div>
 
           {filteredGyms.length === 0 ? (
-            <div className="card p-10 text-center text-ink-300">
+            <div className="card p-8 text-center text-ink-300">
               No gyms found. Try a different filter or location.
             </div>
           ) : (
-            <div className="grid gap-6 lg:grid-cols-[1.2fr_1fr]">
-              <div className="grid gap-6 sm:grid-cols-2">
-                {filteredGyms.map((g) => (
+            <>
+              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                {filteredGyms.slice(0, 4).map((g) => (
                   <GymCard key={g.id} gym={g} />
                 ))}
               </div>
-
-              {/* Map placeholder */}
-              <div className="card relative h-[480px] overflow-hidden lg:h-auto lg:min-h-[560px]">
-                <div
-                  className="absolute inset-0"
-                  style={{
-                    backgroundImage:
-                      "radial-gradient(rgba(255,255,255,0.04) 1px, transparent 1px), radial-gradient(rgba(225,29,42,0.05) 1px, transparent 1px)",
-                    backgroundSize: "32px 32px, 64px 64px",
-                    backgroundPosition: "0 0, 16px 16px",
-                  }}
-                />
-                <div className="absolute inset-0 bg-gradient-to-br from-ink-900 via-ink-950/40 to-ink-900" />
-
-                {[
-                  { top: "22%", left: "30%", label: "Ironworks" },
-                  { top: "44%", left: "62%", label: "Renzo" },
-                  { top: "68%", left: "38%", label: "Atos" },
-                  { top: "30%", left: "78%", label: "Sitsongpeenong" },
-                ].map((p) => (
-                  <div
-                    key={p.label}
-                    className="absolute -translate-x-1/2 -translate-y-1/2"
-                    style={{ top: p.top, left: p.left }}
-                  >
-                    <div className="relative">
-                      <div className="h-4 w-4 rounded-full bg-blood-500 ring-4 ring-blood-500/30 animate-pulseRing" />
-                      <div className="absolute left-1/2 top-5 -translate-x-1/2 whitespace-nowrap rounded-md border border-ink-700 bg-ink-900/90 px-2 py-1 text-[10px] font-semibold text-white shadow">
-                        {p.label}
-                      </div>
-                    </div>
-                  </div>
-                ))}
-
-                <div className="absolute right-3 top-3 flex gap-2">
-                  <button className="btn-secondary h-9 px-2.5">
-                    <Filter className="h-3.5 w-3.5" />
-                  </button>
+              {filteredGyms.length > 4 && (
+                <div className="mt-4 text-center">
+                  <Link href="/start-training" className="text-sm font-semibold text-ink-300 hover:text-white">
+                    View all {filteredGyms.length} gyms →
+                  </Link>
                 </div>
-                <div className="absolute bottom-3 left-3 right-3 rounded-md border border-ink-700 bg-ink-900/90 px-3 py-2 text-xs text-ink-300">
-                  Live map preview · Wire to Google Maps with{" "}
-                  <code className="text-blood-500">NEXT_PUBLIC_GOOGLE_MAPS_API_KEY</code>
-                </div>
-              </div>
-            </div>
+              )}
+            </>
           )}
         </div>
       </section>
