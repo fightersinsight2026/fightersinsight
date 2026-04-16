@@ -399,6 +399,7 @@ export type MockGym = {
   name: string;
   city: string;
   state: string;
+  zip: string;
   disciplines: string[];
   beginnerFriendly: boolean;
   partner: boolean;
@@ -415,6 +416,7 @@ export const MOCK_GYMS: MockGym[] = [
     name: "Ironworks Boxing Club",
     city: "Brooklyn",
     state: "NY",
+    zip: "11201",
     disciplines: ["Boxing", "Strength"],
     beginnerFriendly: true,
     partner: true,
@@ -430,6 +432,7 @@ export const MOCK_GYMS: MockGym[] = [
     name: "Renzo Gracie Academy",
     city: "New York",
     state: "NY",
+    zip: "10001",
     disciplines: ["BJJ", "MMA", "Wrestling"],
     beginnerFriendly: true,
     partner: false,
@@ -445,6 +448,7 @@ export const MOCK_GYMS: MockGym[] = [
     name: "Sitsongpeenong Muay Thai",
     city: "Los Angeles",
     state: "CA",
+    zip: "90028",
     disciplines: ["Muay Thai", "Kickboxing"],
     beginnerFriendly: true,
     partner: true,
@@ -460,6 +464,7 @@ export const MOCK_GYMS: MockGym[] = [
     name: "Atos Jiu-Jitsu HQ",
     city: "San Diego",
     state: "CA",
+    zip: "92101",
     disciplines: ["BJJ", "No-Gi"],
     beginnerFriendly: true,
     partner: false,
@@ -475,6 +480,7 @@ export const MOCK_GYMS: MockGym[] = [
     name: "American Top Team",
     city: "Coconut Creek",
     state: "FL",
+    zip: "33073",
     disciplines: ["MMA", "Boxing", "BJJ", "Wrestling"],
     beginnerFriendly: true,
     partner: true,
@@ -490,6 +496,7 @@ export const MOCK_GYMS: MockGym[] = [
     name: "Mendez Boxing",
     city: "Manhattan",
     state: "NY",
+    zip: "10016",
     disciplines: ["Boxing"],
     beginnerFriendly: false,
     partner: false,
@@ -505,6 +512,7 @@ export const MOCK_GYMS: MockGym[] = [
     name: "Tristar Gym",
     city: "Montreal",
     state: "QC",
+    zip: "H2T1S6",
     disciplines: ["MMA", "BJJ", "Muay Thai"],
     beginnerFriendly: true,
     partner: true,
@@ -520,6 +528,7 @@ export const MOCK_GYMS: MockGym[] = [
     name: "10 Tigers Muay Thai",
     city: "Brooklyn",
     state: "NY",
+    zip: "11215",
     disciplines: ["Muay Thai", "Kickboxing"],
     beginnerFriendly: true,
     partner: false,

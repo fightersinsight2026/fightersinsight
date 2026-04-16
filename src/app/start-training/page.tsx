@@ -98,6 +98,38 @@ export default function StartTrainingPage() {
   // Gym filters
   const [locationQuery, setLocationQuery] = useState("");
   const [activeDiscipline, setActiveDiscipline] = useState("All disciplines");
+  const [locatingStatus, setLocatingStatus] = useState<"idle" | "loading" | "error">("idle");
+
+  function handleUseLocation() {
+    if (!navigator.geolocation) {
+      setLocatingStatus("error");
+      return;
+    }
+    setLocatingStatus("loading");
+    navigator.geolocation.getCurrentPosition(
+      async (pos) => {
+        try {
+          const res = await fetch(
+            `https://nominatim.openstreetmap.org/reverse?lat=${pos.coords.latitude}&lon=${pos.coords.longitude}&format=json&addressdetails=1`,
+            { headers: { "Accept-Language": "en" } }
+          );
+          const data = await res.json();
+          const addr = data.address;
+          const city = addr.city || addr.town || addr.village || addr.suburb || "";
+          const state = addr.state || "";
+          setLocationQuery(city ? `${city}, ${state}` : state);
+          setLocatingStatus("idle");
+        } catch {
+          setLocationQuery(`${pos.coords.latitude.toFixed(2)}, ${pos.coords.longitude.toFixed(2)}`);
+          setLocatingStatus("idle");
+        }
+      },
+      () => {
+        setLocatingStatus("error");
+        setTimeout(() => setLocatingStatus("idle"), 3000);
+      }
+    );
+  }
 
   function handleQuizAnswer(optionScores: Scores) {
     const newScores = { ...quizScores };
@@ -142,7 +174,8 @@ export default function StartTrainingPage() {
         (g) =>
           g.city.toLowerCase().includes(q) ||
           g.state.toLowerCase().includes(q) ||
-          g.name.toLowerCase().includes(q)
+          g.name.toLowerCase().includes(q) ||
+          g.zip.toLowerCase().includes(q)
       );
     }
 
@@ -188,10 +221,16 @@ export default function StartTrainingPage() {
               </a>
             </div>
             <button
-              onClick={() => setLocationQuery("")}
-              className="mt-3 inline-flex items-center gap-1.5 text-xs font-semibold text-ink-300 hover:text-white"
+              onClick={handleUseLocation}
+              disabled={locatingStatus === "loading"}
+              className="mt-3 inline-flex items-center gap-1.5 text-xs font-semibold text-ink-300 hover:text-white disabled:opacity-50"
             >
-              <Compass className="h-3 w-3" /> Or use my current location
+              <Compass className={`h-3 w-3 ${locatingStatus === "loading" ? "animate-spin" : ""}`} />
+              {locatingStatus === "loading"
+                ? "Detecting location…"
+                : locatingStatus === "error"
+                ? "Location unavailable — try typing a city"
+                : "Or use my current location"}
             </button>
           </div>
         </div>
