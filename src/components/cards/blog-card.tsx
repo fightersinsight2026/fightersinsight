@@ -14,39 +14,39 @@ export function BlogCard({ post, featured = false }: { post: MockBlogPost; featu
     >
       <div
         className={`relative overflow-hidden ${
-          featured ? "lg:w-3/5 aspect-[16/10] lg:aspect-auto" : "aspect-[16/9]"
+          featured ? "lg:w-1/2 aspect-[16/10] lg:aspect-auto" : "aspect-[16/9]"
         }`}
       >
         <Image
           src={post.cover}
           alt={post.title}
           fill
-          sizes={featured ? "(max-width:1024px) 100vw, 60vw" : "(max-width:768px) 100vw, 33vw"}
+          sizes={featured ? "(max-width:1024px) 100vw, 50vw" : "(max-width:768px) 100vw, 25vw"}
           className="object-cover transition duration-500 group-hover:scale-105"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-ink-950/80 via-ink-950/10 to-transparent" />
-        <span className="chip-blood absolute left-3 top-3">{post.category}</span>
+        <span className="chip-blood absolute left-2 top-2 text-[10px]">{post.category}</span>
       </div>
 
-      <div className={`p-5 ${featured ? "lg:w-2/5 lg:p-7" : ""}`}>
+      <div className={`p-3 ${featured ? "lg:w-1/2 lg:p-5" : ""}`}>
         <h3
-          className={`heading-display text-white group-hover:text-blood-500 transition ${
-            featured ? "text-2xl lg:text-3xl" : "text-lg"
+          className={`heading-display text-white group-hover:text-blood-500 transition line-clamp-2 ${
+            featured ? "text-lg lg:text-xl" : "text-sm"
           }`}
         >
           {post.title}
         </h3>
-        <p className="mt-2 line-clamp-2 text-sm text-ink-300">{post.excerpt}</p>
-        <div className="mt-4 flex items-center gap-3 text-xs text-ink-400">
-          <span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-ink-700 text-[10px] font-bold text-white">
+        <p className={`mt-1 line-clamp-2 text-ink-300 ${featured ? "text-sm" : "text-xs"}`}>{post.excerpt}</p>
+        <div className="mt-2 flex items-center gap-2 text-[11px] text-ink-400">
+          <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-ink-700 text-[9px] font-bold text-white">
             {post.author.avatarInitials}
           </span>
           <span className="font-semibold text-ink-200">{post.author.name}</span>
           <span>·</span>
           <span>{formatDate(post.publishedAt)}</span>
           <span className="inline-flex items-center gap-1 ml-auto">
-            <Clock className="h-3 w-3" />
-            {post.readingMinutes} min
+            <Clock className="h-2.5 w-2.5" />
+            {post.readingMinutes}m
           </span>
         </div>
       </div>
