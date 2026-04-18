@@ -332,23 +332,6 @@ export default function StartTrainingPage() {
           )}
         </div>
 
-        {/* Static style cards below quiz */}
-        <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-          {COMBAT_STYLES.map((s) => (
-            <div key={s.slug} className="card card-hover overflow-hidden">
-              <div className={`h-2 bg-gradient-to-r ${s.color}`} />
-              <div className="p-5">
-                <h3 className="heading-display text-xl text-white">{s.name}</h3>
-                <p className="mt-2 text-sm text-ink-300">{s.blurb}</p>
-                <div className="mt-4 flex flex-wrap gap-1.5">
-                  {s.pros.map((p) => (
-                    <span key={p} className="chip">{p}</span>
-                  ))}
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
       </section>
 
       {/* Gym list — compact */}
