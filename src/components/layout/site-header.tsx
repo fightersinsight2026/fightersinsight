@@ -19,12 +19,22 @@ export function SiteHeader() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [notifOpen, setNotifOpen] = useState(false);
 
-  const notifications = [
+  const [notifications, setNotifications] = useState([
     { id: 1, text: "UFC 327 results are in — see the recap", time: "2h ago", read: false },
     { id: 2, text: "New blog: Carlos Ulberg wins LHW title", time: "5h ago", read: false },
     { id: 3, text: "Your comment got 12 upvotes", time: "1d ago", read: true },
     { id: 4, text: "New gym added near you: Kings Combat", time: "2d ago", read: true },
-  ];
+  ]);
+
+  function markAsRead(id: number) {
+    setNotifications((prev) => prev.map((n) => (n.id === id ? { ...n, read: true } : n)));
+  }
+
+  function markAllAsRead() {
+    setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
+  }
+
+  const unreadCount = notifications.filter((n) => !n.read).length;
 
   // Lock body scroll when mobile menu is open
   useEffect(() => {
@@ -68,8 +78,10 @@ export function SiteHeader() {
                 aria-label="Notifications"
               >
                 <Bell className="h-4 w-4" />
-                {notifications.some((n) => !n.read) && (
-                  <span className="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-blood-500" />
+                {unreadCount > 0 && (
+                  <span className="absolute top-1 right-1 min-w-[16px] h-[16px] px-1 flex items-center justify-center rounded-full bg-blood-500 text-[10px] font-bold text-white">
+                    {unreadCount}
+                  </span>
                 )}
               </button>
 
@@ -79,29 +91,44 @@ export function SiteHeader() {
                   <div className="absolute right-0 top-12 z-50 w-80 rounded-xl border border-ink-700 bg-ink-900 shadow-2xl">
                     <div className="flex items-center justify-between border-b border-ink-700 px-4 py-3">
                       <span className="text-sm font-bold text-white">Notifications</span>
-                      <span className="text-[11px] text-ink-400">{notifications.filter((n) => !n.read).length} new</span>
+                      <span className="text-[11px] text-ink-400">{unreadCount} new</span>
                     </div>
                     <div className="max-h-72 overflow-y-auto">
-                      {notifications.map((n) => (
-                        <button
-                          key={n.id}
-                          onClick={() => setNotifOpen(false)}
-                          className={`block w-full px-4 py-3 text-left text-sm transition hover:bg-ink-800 ${
-                            n.read ? "text-ink-400" : "text-ink-100"
-                          }`}
-                        >
-                          <div className="flex items-start gap-2">
-                            {!n.read && <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-blood-500" />}
-                            <div>
-                              <div className={n.read ? "" : "font-semibold"}>{n.text}</div>
-                              <div className="text-[11px] text-ink-400 mt-0.5">{n.time}</div>
+                      {notifications.length === 0 ? (
+                        <div className="px-4 py-6 text-center text-sm text-ink-400">No notifications</div>
+                      ) : (
+                        notifications.map((n) => (
+                          <button
+                            key={n.id}
+                            onClick={() => {
+                              markAsRead(n.id);
+                              setNotifOpen(false);
+                            }}
+                            className={`block w-full px-4 py-3 text-left text-sm transition hover:bg-ink-800 ${
+                              n.read ? "text-ink-400" : "text-ink-100"
+                            }`}
+                          >
+                            <div className="flex items-start gap-2">
+                              {!n.read ? (
+                                <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-blood-500" />
+                              ) : (
+                                <span className="mt-1.5 h-1.5 w-1.5 shrink-0" />
+                              )}
+                              <div>
+                                <div className={n.read ? "" : "font-semibold"}>{n.text}</div>
+                                <div className="text-[11px] text-ink-400 mt-0.5">{n.time}</div>
+                              </div>
                             </div>
-                          </div>
-                        </button>
-                      ))}
+                          </button>
+                        ))
+                      )}
                     </div>
                     <div className="border-t border-ink-700 px-4 py-2">
-                      <button onClick={() => setNotifOpen(false)} className="text-xs font-semibold text-blood-500 hover:text-blood-600">
+                      <button
+                        onClick={markAllAsRead}
+                        disabled={unreadCount === 0}
+                        className="text-xs font-semibold text-blood-500 hover:text-blood-600 disabled:text-ink-500 disabled:cursor-not-allowed"
+                      >
                         Mark all as read
                       </button>
                     </div>
