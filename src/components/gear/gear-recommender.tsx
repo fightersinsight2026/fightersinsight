@@ -311,12 +311,28 @@ export function GearRecommender() {
                 <>
                   {/* First visit welcome */}
                   {isFirstVisit && step === 0 && (
-                    <div className="mb-6 rounded-lg border border-blood-500/30 bg-blood-500/10 p-4">
-                      <div className="text-sm font-semibold text-white">👋 First time here?</div>
-                      <p className="mt-1 text-xs text-ink-200">
-                        Answer a few quick questions and we&apos;ll build your personalized fight kit.
-                        Takes 60 seconds.
-                      </p>
+                    <div className="mb-6 space-y-4">
+                      <div className="rounded-lg border border-blood-500/30 bg-blood-500/10 p-4">
+                        <div className="text-sm font-semibold text-white">Welcome to the Gear Recommender</div>
+                        <p className="mt-1 text-xs text-ink-200">
+                          Answer a few quick questions and we&apos;ll build your personalized fight kit.
+                          Takes 60 seconds.
+                        </p>
+                      </div>
+                      <div className="rounded-lg border border-gold-500/30 bg-gold-500/5 p-4">
+                        <div className="text-sm font-semibold text-white">Not sure which discipline to pick?</div>
+                        <p className="mt-1 text-xs text-ink-300">
+                          Take our &ldquo;Find Your Fighting Style&rdquo; quiz first — it&apos;ll help you figure out
+                          which combat sport suits you before picking gear.
+                        </p>
+                        <Link
+                          href="/start-training?returnTo=gear#guide"
+                          onClick={handleClose}
+                          className="btn-secondary mt-3 text-xs inline-flex"
+                        >
+                          <Sparkles className="h-3.5 w-3.5" /> Take the style quiz first
+                        </Link>
+                      </div>
                     </div>
                   )}
 

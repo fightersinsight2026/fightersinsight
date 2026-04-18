@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, Suspense } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { GymCard } from "@/components/cards/gym-card";
 import { COMBAT_STYLES, MOCK_GYMS } from "@/lib/mock-data";
 import { MapPin, Search, Compass, Heart, ShieldCheck, Sparkles, ArrowRight, RotateCcw, CheckCircle2 } from "lucide-react";
@@ -89,7 +90,9 @@ const DISCIPLINE_FILTERS = [
   "Beginner friendly",
 ];
 
-export default function StartTrainingPage() {
+function StartTrainingContent() {
+  const searchParams = useSearchParams();
+  const returnToGear = searchParams.get("returnTo") === "gear";
   // Quiz state
   const [quizStep, setQuizStep] = useState(0);
   const [quizScores, setQuizScores] = useState<Record<string, number>>({});
@@ -320,13 +323,18 @@ export default function StartTrainingPage() {
                 })}
               </div>
 
-              <div className="mt-5 flex gap-3">
+              <div className="mt-5 flex flex-wrap gap-3">
                 <button onClick={resetQuiz} className="btn-secondary">
                   <RotateCcw className="h-4 w-4" /> Retake quiz
                 </button>
                 <a href="#gyms" className="btn-primary">
                   Find gyms <ArrowRight className="h-4 w-4" />
                 </a>
+                {returnToGear && (
+                  <Link href="/gear" className="btn-primary">
+                    <Sparkles className="h-4 w-4" /> Now find my gear <ArrowRight className="h-4 w-4" />
+                  </Link>
+                )}
               </div>
             </div>
           )}
@@ -484,5 +492,13 @@ export default function StartTrainingPage() {
         </div>
       </section>
     </>
+  );
+}
+
+export default function StartTrainingPage() {
+  return (
+    <Suspense>
+      <StartTrainingContent />
+    </Suspense>
   );
 }
