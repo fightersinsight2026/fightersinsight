@@ -310,7 +310,7 @@ export function GearRecommender() {
               {!showResults ? (
                 <>
                   {/* First visit welcome */}
-                  {isFirstVisit && step === 0 && (
+                  {step === 0 && (
                     <div className="mb-6 space-y-4">
                       <div className="rounded-lg border border-blood-500/30 bg-blood-500/10 p-4">
                         <div className="text-sm font-semibold text-white">Welcome to the Gear Recommender</div>
