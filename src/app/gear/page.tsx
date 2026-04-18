@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import { GearCard } from "@/components/cards/gear-card";
 import { GearRecommender } from "@/components/gear/gear-recommender";
 import { MOCK_GEAR } from "@/lib/mock-data";
@@ -34,7 +35,9 @@ const PICKS = [
 export default function GearPage() {
   return (
     <>
-      <GearRecommender />
+      <Suspense>
+        <GearRecommender />
+      </Suspense>
       <section className="border-b border-ink-800/80">
         <div className="container-fi py-14">
           <div className="eyebrow mb-3">Gear Reviews</div>

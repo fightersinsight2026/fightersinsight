@@ -331,7 +331,7 @@ function StartTrainingContent() {
                   Find gyms <ArrowRight className="h-4 w-4" />
                 </a>
                 {returnToGear && (
-                  <Link href="/gear" className="btn-primary">
+                  <Link href="/gear?openQuiz=1" className="btn-primary">
                     <Sparkles className="h-4 w-4" /> Now find my gear <ArrowRight className="h-4 w-4" />
                   </Link>
                 )}

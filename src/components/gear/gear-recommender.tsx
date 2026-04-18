@@ -3,6 +3,7 @@
 import { useState, useMemo, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { MOCK_GEAR, type MockGear } from "@/lib/mock-data";
 import {
   X,
@@ -49,6 +50,9 @@ const TRAINING_TYPES_BY_DISCIPLINE: Record<Discipline, TrainingType[]> = {
 };
 
 export function GearRecommender() {
+  const searchParams = useSearchParams();
+  const shouldOpenQuiz = searchParams.get("openQuiz") === "1";
+
   const [open, setOpen] = useState(false);
   const [isFirstVisit, setIsFirstVisit] = useState(false);
   const [step, setStep] = useState(0);
@@ -64,7 +68,7 @@ export function GearRecommender() {
   const [savedKit, setSavedKit] = useState(false);
   const [shareLabel, setShareLabel] = useState("Share kit");
 
-  // First visit detection
+  // First visit detection + auto-open from URL param
   useEffect(() => {
     try {
       const seen = localStorage.getItem("fi-gear-recommender-seen");
@@ -72,13 +76,17 @@ export function GearRecommender() {
         setOpen(true);
         setIsFirstVisit(true);
       }
+      // Auto-open when returning from style quiz
+      if (shouldOpenQuiz) {
+        setOpen(true);
+      }
       // Load any saved kit
       const saved = localStorage.getItem("fi-saved-gear-kit");
       if (saved) setSavedKit(true);
     } catch {
       /* ignore */
     }
-  }, []);
+  }, [shouldOpenQuiz]);
 
   function handleOpen() {
     setOpen(true);
